@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recommended Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- 네비게이션 바 -->
+        <nav class="navbar">
+            <a href="{{ url_for('recommend') }}"
+               class="{% if category == 'recommend' %}active{% endif %}">Recommended</a>
+            <a href="{{ url_for('home', category='coffee') }}"
+               class="{% if category == 'coffee' %}active{% endif %}">Coffee</a>
+            <a href="{{ url_for('home', category='tea') }}"
+               class="{% if category == 'tea' %}active{% endif %}">Tea</a>
+            <a href="{{ url_for('home', category='beverage') }}"
+               class="{% if category == 'beverage' %}active{% endif %}">Beverage</a>
+            <button class="lang-btn" onclick="openLanguageModal()">Language</button>
+        </nav>
+
+        <!-- 언어 선택 모달 윈도우 -->
+        <div id="languageModal" class="modal">
+            <div class="modal-content">
+                <h2>Select Language</h2>
+                <div class="language-grid">
+                    <button onclick="setLanguage('ko')">한국어</button>
+                    <button onclick="setLanguage('zh')">中文</button>
+                    <button onclick="setLanguage('en')">English</button>
+                    <button onclick="setLanguage('ja')">日本語</button>
+                    <button onclick="setLanguage('fr')">Français</button>
+                    <button onclick="setLanguage('de')">Deutsch</button>
+                    <button onclick="setLanguage('es')">Español</button>
+                    <button onclick="setLanguage('it')">Italiano</button>
+                    <button onclick="setLanguage('pt')">Português</button>
+                    <button onclick="setLanguage('ru')">Русский</button>
+                </div>
+                <button class="back-btn" onclick="closeLanguageModal()">Back</button>
+            </div>
+        </div>
+
+         <!-- 성별에 따른 추천 메뉴 타이틀 -->
+         <h1>{{ "Male's Recommend Menu" if gender == 'male' else "Female's Recommend Menu" }}</h1>
+         <p>예측된 감정: {{ emotion }},예측된 연령: {{ age }}, 예측된 성별:{{gender }}</p>
+         <p></p>
+         <!-- 추천 문구 -->
+    <div class="recommendation">
+        {{
+            "활기찬 에너지를 느낄 수 있는 신나는 메뉴를 즐겨보세요!" if gender == 'male' and age == '20세 이하' and emotion == '긍정' else
+            "기분을 전환할 수 있는 특별한 메뉴를 만나보세요." if gender == 'male' and age == '20세 이하' and emotion == '부정' else
+            "간단하면서도 만족스러운 클래식 메뉴를 추천합니다." if gender == 'male' and age == '20세 이하' and emotion == '중립' else
+
+            "성공적인 하루를 축하하며 프리미엄 메뉴를 즐겨보세요!" if gender == 'male' and age == '20~39세' and emotion == '긍정' else
+            "따뜻한 메뉴로 마음을 환하게 만들어보세요." if gender == 'male' and age == '20~39세' and emotion == '부정' else
+            "바쁜 일상 속에서 균형 잡힌 선택을 즐겨보세요." if gender == 'male' and age == '20~39세' and emotion == '중립' else
+
+            "삶의 여유를 만끽할 수 있는 추천 메뉴를 즐겨보세요." if gender == 'male' and age == '40세 이상' and emotion == '긍정' else
+            "마음을 진정시키는 따뜻한 메뉴를 즐겨보세요." if gender == 'male' and age == '40세 이상' and emotion == '부정' else
+            "시간이 지나도 변하지 않는 클래식 메뉴를 추천합니다." if gender == 'male' and age == '40세 이상' and emotion == '중립' else
+
+            "즐거운 하루를 위한 재미있고 매력적인 메뉴를 만나보세요!" if gender == 'female' and age == '20세 이하' and emotion == '긍정' else
+            "달콤하고 위로가 되는 특별한 메뉴를 만나보세요." if gender == 'female' and age == '20세 이하' and emotion == '부정' else
+            "균형 잡힌 선택으로 하루를 완성해보세요." if gender == 'female' and age == '20세 이하' and emotion == '중립' else
+
+            "매 순간을 축하하며 프리미엄 메뉴를 즐겨보세요!" if gender == 'female' and age == '20~39세' and emotion == '긍정' else
+            "편안함을 느낄 수 있는 따뜻한 메뉴를 추천합니다." if gender == 'female' and age == '20~39세' and emotion == '부정' else
+            "편리함과 맛을 함께 즐길 수 있는 균형 잡힌 메뉴를 추천합니다." if gender == 'female' and age == '20~39세' and emotion == '중립' else
+
+            "세련된 선택으로 우아함을 더해보세요." if gender == 'female' and age == '40세 이상' and emotion == '긍정' else
+            "마음을 진정시킬 수 있는 따뜻하고 포근한 메뉴를 즐겨보세요." if gender == 'female' and age == '40세 이상' and emotion == '부정' else
+            "시간이 지나도 변함없는 클래식 메뉴를 추천합니다." if gender == 'female' and age == '40세 이상' and emotion == '중립' else
+
+            "지금은 맞춤 추천을 제공할 수 없습니다."
+        }}
+    </div>
+          
+        <!-- 메뉴 리스트 -->
+        <div class="menu-grid">
+            {% for item in menu %}
+            <div class="menu-item">
+                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}" class="item-image">
+                <h2>{{ item.name }}</h2>
+                <p>Price: ${{ item.price }}</p>
+                <button onclick="addToCart('{{ item.id }}')" class="btn">Add to Cart</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 쇼핑 카트와 버튼을 담는 섹션 -->
+        <div class="cart-container">
+            <div class="cart" id="cart">
+                {% include 'cart_partial.html' %}
+            </div>
+            <!-- 결제 및 취소 버튼 -->
+            <div class="action-buttons">
+                <button class="payment-btn" onclick="openPaymentModal()">Payment</button>
+                <button class="cancel-btn" onclick="window.location.href='/'">Cancel</button>
+            </div>
+        </div>
+
+        <!-- 결제 모달 윈도우 -->
+        <div id="paymentModal" class="modal">
+            <div class="modal-content">
+                <h2>Select Payment Method</h2>
+                <div class="payment-options">
+                    <button onclick="alert('Card Payment Selected')">Card Payment</button>
+                    <button onclick="alert('Cash Payment Selected')">Cash Payment</button>
+                </div>
+                <div class="store-options">
+                    <button onclick="alert('For Here Selected')">For Here</button>
+                    <button onclick="alert('To-Go Selected')">To-Go</button>
+                </div>
+                <button class="back-btn" onclick="closePaymentModal()">Back</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    // 모달 열기/닫기 함수
+    function openLanguageModal() { document.getElementById("languageModal").style.display = "flex"; }
+    function closeLanguageModal() { document.getElementById("languageModal").style.display = "none"; }
+
+    function setLanguage(lang) {
+        alert("Language selected: " + lang);
+        closeLanguageModal();
+    }
+
+    function addToCart(itemId) {
+        fetch(`/add_to_cart/${itemId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("cart").innerHTML = data.cart_html;
+            } else {
+                alert("Error adding item to cart.");
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function openPaymentModal() { document.getElementById("paymentModal").style.display = "flex"; }
+    function closePaymentModal() { document.getElementById("paymentModal").style.display = "none"; }
+</script>

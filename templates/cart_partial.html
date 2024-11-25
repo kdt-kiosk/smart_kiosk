@@ -1,0 +1,67 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+<h2>Shopping Cart</h2>
+<ul>
+    {% for cart_item in cart %}
+    <li>
+        <span class="cart-item-name" data-name="{{ cart_item.name }}">{{ cart_item.name }}</span> - 
+        ${{ cart_item.price }} x {{ cart_item.quantity }}
+        <div class="quantity-controls">
+            <a href="javascript:void(0)" onclick="updateQuantity('{{ cart_item.id }}', 'decrease')">-</a>
+            <a href="javascript:void(0)" onclick="updateQuantity('{{ cart_item.id }}', 'increase')">+</a>
+        </div>
+        <a href="javascript:void(0)" onclick="removeItem('{{ cart_item.id }}')" class="remove-btn">x</a>
+    </li>
+    {% endfor %}
+</ul>
+<p>Total Price: ${{ total_price }}</p>
+<a href="{{ url_for('checkout') }}" class="checkout-btn">Checkout</a>
+<script>
+      // 쇼핑카트 계산 함수
+      function updateQuantity(itemId, action) {
+        fetch(`/update_quantity/${itemId}/${action}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // JSON 응답에서 cart_html을 받아서 업데이트
+                    document.getElementById("cart").innerHTML = data.cart_html;
+                    reapplyCartTranslations(); // 번역 다시 적용
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function removeItem(itemId) {
+        fetch(`/remove_item/${itemId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // JSON 응답에서 cart_html을 받아서 업데이트
+                    document.getElementById("cart").innerHTML = data.cart_html;
+                    reapplyCartTranslations(); // 번역 다시 적용
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // 번역 재적용 함수
+    function reapplyCartTranslations() {
+        const cartItems = document.querySelectorAll(".cart-item-name");
+        cartItems.forEach(cartItem => {
+            const originalName = cartItem.getAttribute("data-name"); // 번역 전 이름 가져오기
+            if (languageData["menu_items"] && languageData["menu_items"][originalName]) {
+                cartItem.innerText = languageData["menu_items"][originalName]; // 번역 적용
+            }
+        });
+    }
+</script>

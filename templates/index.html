@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cafe Kiosk</title>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        #video {
+            border: 2px solid #333;
+            width: 50%;
+            max-width: 600px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Cafe Kiosk</h1>
+        <h2>Looking at the camera for 2 seconds to proceed</h2>
+        <img src="{{ url_for('video_feed') }}" id="video" alt="Webcam Feed">
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+
+        // 주기적으로 서버로부터의 응답을 체크하여 리디렉션 여부 확인
+    setInterval(async () => {
+        try {
+            const response = await fetch("{{ url_for('video_feed') }}");
+            const text = await response.text();
+
+            if (text.includes("REDIRECT:")) {
+                // 서버에서 리디렉션 URL 추출
+                const redirectUrl = text.split("REDIRECT:")[1].trim();
+                if (redirectUrl) {
+                    window.location.href = redirectUrl; // 해당 URL로 리디렉션
+                }
+            }
+        } catch (error) {
+            console.error("Error checking redirect status:", error);
+        }
+    }, 1000); // 1초마다 체크
+    </script>
+</body>
+</html>

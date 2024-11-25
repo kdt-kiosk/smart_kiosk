@@ -1,0 +1,185 @@
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cafe Kiosk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body data-show-language-modal="{{ 'true' if language_modal else 'false' }}">
+    <div class="container">
+        <!-- 네비게이션 바 -->
+        <nav class="navbar">
+            <a href="{{ url_for('recommend', category='recommend') }}" 
+               class="{% if category == 'recommend' %}active{% endif %}">Recommended</a>
+            <a href="{{ url_for('home', category='coffee') }}" 
+               class="{% if category == 'coffee' %}active{% endif %}">Coffee</a>
+            <a href="{{ url_for('home', category='tea') }}" 
+               class="{% if category == 'tea' %}active{% endif %}">Tea</a>
+            <a href="{{ url_for('home', category='beverage') }}" 
+               class="{% if category == 'beverage' %}active{% endif %}">Beverage</a>
+            <button class="lang-btn" onclick="openLanguageModal()">Language</button>
+        </nav>
+
+        <!-- 언어 선택 모달 윈도우 -->
+        <div id="languageModal" class="modal">
+            <div class="modal-content">
+                <h2>Select Language</h2>
+
+                <!-- 2x5 배열 언어 선택 버튼 -->
+                <div class="language-grid">
+                    <button onclick="setLanguage('ko')">한국어</button>
+                    <button onclick="setLanguage('zh')">中文</button>
+                    <button onclick="setLanguage('en')">English</button>
+                    <button onclick="setLanguage('ja')">日本語</button>
+                    <button onclick="setLanguage('fr')">Français</button>
+                    <button onclick="setLanguage('de')">Deutsch</button>
+                    <button onclick="setLanguage('es')">Español</button>
+                    <button onclick="setLanguage('it')">Italiano</button>
+                    <button onclick="setLanguage('pt')">Português</button>
+                    <button onclick="setLanguage('ru')">Русский</button>
+                </div>
+
+                <!-- 뒤로 가기 버튼 -->
+                <button class="back-btn" onclick="closeLanguageModal()">Back</button>
+            </div>
+        </div>
+
+
+        <h1>Welcome to the Cafe Kiosk</h1>
+
+        <!-- 메뉴 리스트 -->
+        <div class="menu-grid">
+            {% for item in menu %}
+            <div class="menu-item">
+                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}" class="item-image">
+                <h2>{{ item.name }}</h2>
+                <p>Price: ${{ item.price }}</p>
+                <button onclick="addToCart('{{ item.id }}')" class="btn">Add to Cart</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 쇼핑 카트와 버튼을 담는 섹션 -->
+        <div class="cart-container">
+            <div class="cart" id="cart">
+                {% include 'cart_partial.html' %}
+            </div>
+
+            <!-- 결제 및 취소 버튼 -->
+            <div class="action-buttons">
+                <button class="payment-btn" onclick="openPaymentModal()">Payment</button>
+                <button class="cancel-btn" onclick="window.location.href='/'">Cancel</button>
+            </div>
+        </div>
+
+        <!-- 결제 모달 윈도우 -->
+        <div id="paymentModal" class="modal">
+            <div class="modal-content">
+                <h2>Select Payment Method</h2>
+
+                <!-- 결제 옵션 버튼 -->
+                <div class="payment-options">
+                    <button onclick="alert('Card Payment Selected')">Card Payment</button>
+                    <button onclick="alert('Cash Payment Selected')">Cash Payment</button>
+                </div>
+
+                <!-- 매장/포장 옵션 버튼 -->
+                <div class="store-options">
+                    <button onclick="alert('For Here Selected')">For Here</button>
+                    <button onclick="alert('To-Go Selected')">To-Go</button>
+                </div>
+
+                <!-- 닫기 버튼 -->
+                <button class="back-btn" onclick="closePaymentModal()">Back</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 페이지 로드 시 모달을 열지 여부를 확인하는 함수
+        document.addEventListener("DOMContentLoaded", function() {
+            const shouldShowModal = document.body.getAttribute("data-show-language-modal") === 'true';
+            if (shouldShowModal) {
+                openLanguageModal();
+            }
+        });
+    </script></body>
+</body>
+
+</html>
+<script>
+
+    // 언어 선택 모달 열기 함수
+    function openLanguageModal() {
+        document.getElementById("languageModal").style.display = "flex";
+    }
+
+    // 언어 선택 모달 닫기 함수
+    function closeLanguageModal() {
+        document.getElementById("languageModal").style.display = "none";
+    }
+    // 언어 설정 (예시)
+    function setLanguage(lang) {
+        // 언어를 선택했을 때의 동작을 여기에 정의하세요.
+        alert("Language selected: " + lang);
+        closeLanguageModal();
+    }
+    // 메뉴 추가 함수
+    function addToCart(itemId) {
+        fetch(`/add_to_cart/${itemId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 장바구니 업데이트 코드 (예: 장바구니 부분 다시 렌더링)
+                    document.getElementById("cart").innerHTML = data.cart_html;
+                } else {
+                    alert("장바구니에 추가하는 중 문제가 발생했습니다.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // 결제 모달 열기
+    function openPaymentModal() {
+        document.getElementById("paymentModal").style.display = "flex";
+    }
+
+    // 결제 모달 닫기
+    function closePaymentModal() {
+        document.getElementById("paymentModal").style.display = "none";
+    }
+
+
+    // 버튼 좌표를 서버로 전송
+    function sendButtonCoordinates() {
+        const buttons = document.querySelectorAll(".btn");
+        const buttonData = Array.from(buttons).map((btn, index) => {
+            const rect = btn.getBoundingClientRect();
+            return {
+                id: btn.getAttribute("id"),
+                left: rect.left,
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
+            };
+        });
+
+        fetch("/update_button_coords", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ buttons: buttonData }),
+        })
+            .then((response) => response.json())
+            .then((data) => console.log("Button coordinates updated:", data))
+            .catch((error) => console.error("Error updating button coordinates:", error));
+    }
+
+    // 페이지 로드 시 버튼 좌표 전송
+    document.addEventListener("DOMContentLoaded", sendButtonCoordinates);
+</script>
