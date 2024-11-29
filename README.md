@@ -98,7 +98,12 @@ Subtitle: 누구나 쉽게 주문할 수 있는 시스템
 
 
 ------------------
+# Process
+![맞춤형키오스크 개념도 drawio](https://github.com/user-attachments/assets/37f0518a-100a-4d4d-870e-f84b6d109f3b)
 
+
+
+----
 # 사용한 모델
 
 https://huggingface.co/kdtFinalProject 참조
