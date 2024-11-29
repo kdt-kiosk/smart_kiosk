@@ -1,6 +1,7 @@
 from flask import Flask, render_template, Response, redirect, url_for, session,request,jsonify,Blueprint
 import cv2
 import os
+import numpy as np
 import json
 import asyncio
 import threading
@@ -10,7 +11,8 @@ from predict_gender import predict_gender
 from predict_age import predict_age
 from predict_race_mobilenetv4 import predict_race  # 인종 예측 함수가 있다고 가정
 from predict_emo_ddamfn import predict_emo
-
+import base64
+import requests
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -59,10 +61,44 @@ cap = cv2.VideoCapture(0)  # 웹캠 시작
 face_detected = False
 face_detected_time = 0
 
+API_KEY = 'ROKfhV6XLDpXoVJuwNzI'
+
+# 카메라와 얼굴 사이의 거리(mm)
+DISTANCE_TO_OBJECT = 1000
+
+# 얼굴의 실제 세로 길이(mm)
+HEIGHT_OF_HUMAN_FACE = 300  # mm
+
+# 시선의 수평 방향 각도. 예시 0.05
+yaw_correction = 0
+
+# 시선의 수직 방향 각도. 예시 -0.03
+pitch_correction = 0.1
+
+
+GAZE_DETECTION_URL = (
+    "http://127.0.0.1:9001/gaze/gaze_detection?api_key=" + API_KEY
+)
+def detect_gazes(frame: np.ndarray):
+    img_encode = cv2.imencode(".jpg", frame)[1]
+    img_base64 = base64.b64encode(img_encode)
+    resp = requests.post(
+        GAZE_DETECTION_URL,
+        json={
+            "api_key": API_KEY,
+            "image": {"type": "base64", "value": img_base64.decode("utf-8")},
+        },
+    )
+    gazes = resp.json()[0]["predictions"]
+    return gazes
         
 def generate_frames():
     global face_detected, face_detected_time, redirect_url
     redirect_url = None
+
+    left_start_time = None
+    right_start_time = None
+    threshold_time = 3  # 시선이 유지되어야 할 시간 (초)
 
     while True:
         success, frame = cap.read()
@@ -96,13 +132,49 @@ def generate_frames():
                     # 나이 분류 수행
                     age = predict_age(save_path)
 
-                    # 리디렉션 URL 설정
-                    redirect_url = '/senior/' if age != '40세 이상' else '/home'
-                    break
+                
+                  
+
         else:
             face_detected = False
             face_detected_time = None
 
+        # 시선 추적 수행
+        gazes = detect_gazes(frame)
+        if gazes:
+            gaze = gazes[0]  # 첫 번째 시선 데이터 사용
+            image_height, image_width = frame.shape[:2]
+            length_per_pixel = HEIGHT_OF_HUMAN_FACE / gaze["face"]["height"]
+
+            dx = -DISTANCE_TO_OBJECT * np.tan(gaze["yaw"] + yaw_correction) / length_per_pixel
+            dx = dx if not np.isnan(dx) else 100000000
+            gaze_point = int(image_width / 2 + dx), int(image_height / 2)
+            print('gaze_point는??',gaze_point)
+            # 시선의 왼쪽/오른쪽 판단
+            if gaze_point[0] < image_width / 2:
+                if left_start_time is None:
+                    left_start_time = time.time()
+                right_start_time = None
+                if time.time() - left_start_time >= threshold_time:
+                    if age == '40세 이상':
+                        redirect_url = '/senior/'  # 왼쪽에서 3초 이상 머물고, 40세이상이면 /senior으로 리디렉션
+                        break
+                    else:
+                        redirect_url = '/home'# 왼쪽에서 3초 이상 머물고, 40세이상이면 /home 리디렉션
+                    
+            elif gaze_point[0] > image_width / 2:
+                if right_start_time is None:
+                    right_start_time = time.time()
+                left_start_time = None
+                if time.time() - right_start_time >= threshold_time:
+                    redirect_url = '/senior/'  # 오른쪽에서 3초 이상 머물면 /senior으로 리디렉션
+                    break
+            else:
+                left_start_time = None
+                right_start_time = None
+
+            # 화면에 시선 포인터 표시
+            cv2.circle(frame, gaze_point, 25, (0, 0, 255), -1)
 
         # 프레임을 JPEG 형식으로 변환
         ret, buffer = cv2.imencode('.jpg', frame)
