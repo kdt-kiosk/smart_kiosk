@@ -203,11 +203,11 @@ def recommend():
         recommended_menu = [item for item in menu_items if item["category"] == "coffee"]
     else:
         recommended_menu = [item for item in menu_items if item["category"] in ["tea", "beverage"]]
-
+    current_language = session.get('language', 'ko')
     
     # 디버깅: gender와 emotion 값 출력
     print("Predicted gender, emotion:", gender,emotion)
-    #print("Predicted emotion:", emotion)
+    print("current_language:", current_language)
     print("Recommended menu items:", [item["name"] for item in recommended_menu])
     
     return render_template(
@@ -218,7 +218,8 @@ def recommend():
         gender=gender,  # gender 변수를 템플릿에 전달
         age=age,  # age 변수를 템플릿에 전달
         emotion=emotion,  # emotion 변수를 템플릿에 전달
-        category='recommend'  # 'recommend' 페이지임을 템플릿에 전달
+        category='recommend',  # 'recommend' 페이지임을 템플릿에 전달
+        current_language=current_language
     )
 
 
@@ -380,7 +381,7 @@ def recommend():
     print("Predicted gender, emotion:", gender,emotion)
     #print("Predicted emotion:", emotion)
     print("Recommended menu items:", [item["name"] for item in recommended_menu])
-    
+    current_language = session.get('language', 'ko')
     return render_template(
         'senior_recommend.html',
         menu=paginated_menu,
@@ -391,7 +392,8 @@ def recommend():
         gender=gender,  # gender 변수를 템플릿에 전달
         age=age,  # age 변수를 템플릿에 전달
         emotion=emotion,  # emotion 변수를 템플릿에 전달
-        category='recommend'  # 'recommend' 페이지임을 템플릿에 전달
+        category='recommend',  # 'recommend' 페이지임을 템플릿에 전달
+        current_language=current_language
     )
 
 # 새로운 체크아웃 라우트

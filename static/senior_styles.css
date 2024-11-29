@@ -25,6 +25,17 @@
 .h1 {
     color: #333;
 }
+/* 추천 문구 스타일 */
+.senior_recommendation {
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #ffe0b3; /* 밝은 주황색 배경 */
+    border-radius: 8px;
+     font-size: 40px; /* Adjust the size to your preference */
+    font-weight: bold;
+    color: #333;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
 
 .senior_navbar {
     background-color: #333;

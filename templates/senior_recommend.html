@@ -13,10 +13,10 @@
         <!-- 네비게이션 바 -->
         <nav class="senior_navbar">
             <a href="{{ url_for('senior.recommend') }}"
-               class="{% if category == 'recommend' %}active{% endif %}">추천메뉴</a>
-               <a href="{{ url_for('senior.home', category='coffee') }}">커피 메뉴</a>
+                class="{% if category == 'recommend' %}active{% endif %}">추천메뉴</a>
+            <a href="{{ url_for('senior.home', category='coffee') }}">커피 메뉴</a>
             <a href="{{ url_for('senior.home', category='tea') }}">차 메뉴</a>
-            
+
             <a href="{{ url_for('senior.home', category='beverage') }}">음료 메뉴</a>
             <!-- 언어 선택 버튼 -->
             <button class="senior_lang-btn" onclick="openLanguageModal()">Language</button>
@@ -36,34 +36,8 @@
             </div>
         </div>
         <p>예측된 감정: {{ emotion }},예측된 연령: {{ age }}, 예측된 성별:{{gender }}</p>
-        <div class="recommendation">
-            {{
-                "활기찬 에너지를 느낄 수 있는 신나는 메뉴를 즐겨보세요!" if gender == 'male' and age == '20세 이하' and emotion == '긍정' else
-                "기분을 전환할 수 있는 특별한 메뉴를 만나보세요." if gender == 'male' and age == '20세 이하' and emotion == '부정' else
-                "간단하면서도 만족스러운 클래식 메뉴를 추천합니다." if gender == 'male' and age == '20세 이하' and emotion == '중립' else
-    
-                "성공적인 하루를 축하하며 프리미엄 메뉴를 즐겨보세요!" if gender == 'male' and age == '20~39세' and emotion == '긍정' else
-                "따뜻한 메뉴로 마음을 환하게 만들어보세요." if gender == 'male' and age == '20~39세' and emotion == '부정' else
-                "바쁜 일상 속에서 균형 잡힌 선택을 즐겨보세요." if gender == 'male' and age == '20~39세' and emotion == '중립' else
-    
-                "삶의 여유를 만끽할 수 있는 추천 메뉴를 즐겨보세요." if gender == 'male' and age == '40세 이상' and emotion == '긍정' else
-                "마음을 진정시키는 따뜻한 메뉴를 즐겨보세요." if gender == 'male' and age == '40세 이상' and emotion == '부정' else
-                "시간이 지나도 변하지 않는 클래식 메뉴를 추천합니다." if gender == 'male' and age == '40세 이상' and emotion == '중립' else
-    
-                "즐거운 하루를 위한 재미있고 매력적인 메뉴를 만나보세요!" if gender == 'female' and age == '20세 이하' and emotion == '긍정' else
-                "달콤하고 위로가 되는 특별한 메뉴를 만나보세요." if gender == 'female' and age == '20세 이하' and emotion == '부정' else
-                "균형 잡힌 선택으로 하루를 완성해보세요." if gender == 'female' and age == '20세 이하' and emotion == '중립' else
-    
-                "매 순간을 축하하며 프리미엄 메뉴를 즐겨보세요!" if gender == 'female' and age == '20~39세' and emotion == '긍정' else
-                "편안함을 느낄 수 있는 따뜻한 메뉴를 추천합니다." if gender == 'female' and age == '20~39세' and emotion == '부정' else
-                "편리함과 맛을 함께 즐길 수 있는 균형 잡힌 메뉴를 추천합니다." if gender == 'female' and age == '20~39세' and emotion == '중립' else
-    
-                "세련된 선택으로 우아함을 더해보세요." if gender == 'female' and age == '40세 이상' and emotion == '긍정' else
-                "마음을 진정시킬 수 있는 따뜻하고 포근한 메뉴를 즐겨보세요." if gender == 'female' and age == '40세 이상' and emotion == '부정' else
-                "시간이 지나도 변함없는 클래식 메뉴를 추천합니다." if gender == 'female' and age == '40세 이상' and emotion == '중립' else
-    
-                "지금은 맞춤 추천을 제공할 수 없습니다."
-            }}
+        <div class="senior_recommendation">
+           
         </div>
 
         <!-- 메뉴 리스트 -->
@@ -84,12 +58,12 @@
             <div class="senior_pagination">
                 {% if page > 1 %}
                 <button class="senior_page-btn"
-                    onclick="window.location.href='{{ url_for('senior.home', category=category, page=page-1) }}'">이전
+                    onclick="window.location.href='{{ url_for('senior.recommend', category=category, page=page-1) }}'">이전
                     메뉴</button>
                 {% endif %}
 
                 {% if page < total_pages %} <button class="senior_page-btn"
-                    onclick="window.location.href='{{ url_for('senior.home', category=category, page=page+1) }}'">다음
+                    onclick="window.location.href='{{ url_for('senior.recommend', category=category, page=page+1) }}'">다음
                     메뉴</button>
                     {% endif %}
             </div>
@@ -129,32 +103,19 @@
 
 </html>
 <script>
+    function openLanguageModal() { document.getElementById("languageModal").style.display = "flex"; }
+    function closeLanguageModal() { document.getElementById("languageModal").style.display = "none"; }
+    function openPaymentModal() { document.getElementById("paymentModal").style.display = "flex"; }
+    function closePaymentModal() { document.getElementById("paymentModal").style.display = "none"; }
+    let currentLanguage = "ko"; // 기본 언어는 한국어
     // 번역 데이터를 저장할 전역 객체
     let languageData = {}; // 초기화
     async function fetchTranslationData() {
         const response = await fetch("{{ url_for('static', filename='translation/translations.json') }}");
         languageData = await response.json(); // 번역 데이터 로드
     }
-    // 페이지 로드 시 실행
-    window.onload = async function () {
-        await fetchTranslationData(); // 번역 데이터 초기화
-        const savedLanguage = sessionStorage.getItem("selectedLanguage") || "ko"; // 저장된 언어 가져오기
-        if (languageData[savedLanguage]) {
-            applyTranslations(languageData[savedLanguage]); // 번역 적용
-        }
-    };
-    function openLanguageModal() {
-        document.getElementById("languageModal").style.display = "flex";
-    }
-
-    function closeLanguageModal() {
-        document.getElementById("languageModal").style.display = "none";
-    }
-
-
-
-    // 장바구니에 추가하는 함수
-    function addToCart(itemId) {
+       // 장바구니에 추가하는 함수
+       function addToCart(itemId) {
         fetch(`/senior/add_to_cart/${itemId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -169,7 +130,7 @@
                     );
                     if (selectedItemElement) {
                         const selectedItem = selectedItemElement.innerText;
-               
+
                     }
                 } else {
                     alert("An issue occurred while adding to the cart.");
@@ -177,39 +138,123 @@
             })
             .catch((error) => console.error("Error:", error));
     }
-
-
-
-
-
-
-
-    function openPaymentModal() {
-        document.getElementById("paymentModal").style.display = "flex";
+    async function fetchLanguageFromServer() {
+        const response = await fetch('/get_language'); // Flask에서 현재 언어 가져오기
+        const data = await response.json();
+        return data.language || 'ko'; // 기본값은 'ko'
     }
-
-    function closePaymentModal() {
-        document.getElementById("paymentModal").style.display = "none";
+    // 번역 데이터를 저장할 전역 객체
+    async function fetchTranslationData() {
+        const response = await fetch("{{ url_for('static', filename='translation/translations.json') }}");
+        languageData = await response.json(); // 번역 데이터 로드
     }
-
-    let currentLanguage = "ko"; // 기본 언어는 한국어
-
-    // 언어 변경 함수
-    async function setLanguage(lang) {
-        currentLanguage = lang; // 글로벌 언어 상태 업데이트
-        sessionStorage.setItem("selectedLanguage", lang);
-        if (languageData[lang]) {
-            applyTranslations(languageData[lang]);
+    // 페이지 로드 시 실행
+    window.onload = async function () {
+        await fetchTranslationData(); // 번역 데이터 초기화
+        const savedLanguage = await fetchLanguageFromServer(); // Flask에서 언어 상태 가져오기
+        currentLanguage = savedLanguage
+        if (languageData[savedLanguage]) {
+            applyTranslations(languageData[savedLanguage]); // 번역 적용
         }
-        closeLanguageModal();
-    }
 
-    // 번역 관련
+    };
+
+
+
+
+
+       // 언어 변경 함수
+       async function setLanguage(lang) {
+        try {
+            // Flask 세션에 언어를 저장하기 위해 서버로 요청 전송
+            const response = await fetch(`/set_language/${lang}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    console.log(`Language successfully set to: ${data.language}`);
+
+                    // 글로벌 언어 상태 업데이트
+                    currentLanguage = data.language;
+                    sessionStorage.setItem("selectedLanguage", data.language);
+
+                    // 번역 데이터 적용
+                    if (languageData[data.language]) {
+                        applyTranslations(languageData[data.language]);
+                    }
+                } else {
+                    console.error("Failed to set language on server.");
+                }
+            } else {
+                console.error("Error setting language. Server response:", response.status);
+            }
+        } catch (error) {
+            console.error("Error during setLanguage:", error);
+        } finally {
+            // 언어 선택 모달 닫기
+            closeLanguageModal();
+        }
+    }
+     // 추천 문구를 업데이트하는 함수
+     function updateRecommendations() {
+        const recommendationElement = document.querySelector('.senior_recommendation');
+        if (!recommendationElement) return;
+        let gender = '{{gender}}';
+        let age = '{{age}}';
+        let emotion = '{{emotion}}';
+        let recommendationText = "";
+        console.log(languageData)
+        // 조건에 따라 추천 문구 설정 (예: gender, age, emotion)
+        if (gender === 'male' && age === '20세 이하' && emotion === '긍정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["positive_male_young"];
+        } else if (gender === 'male' && age === '20세 이하' && emotion === '부정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["negative_male_young"];
+        } else if (gender === 'male' && age === '20세 이하' && emotion === '중립') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["neutral_male_young"];
+        } else if (gender === 'male' && age === '20~39세' && emotion === '긍정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["positive_male_adult"];
+        } else if (gender === 'male' && age === '20~39세' && emotion === '부정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["negative_male_adult"];
+        } else if (gender === 'male' && age === '20~39세' && emotion === '중립') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["neutral_male_adult"];
+        } else if (gender === 'male' && age === '40세 이상' && emotion === '긍정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["positive_male_senior"];
+        } else if (gender === 'male' && age === '40세 이상' && emotion === '부정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["negative_male_senior"];
+            console.log(recommendationText);
+        } else if (gender === 'male' && age === '40세 이상' && emotion === '중립') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["neutral_male_senior"];
+        } else if (gender === 'female' && age === '20세 이하' && emotion === '긍정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["positive_female_young"];
+        } else if (gender === 'female' && age === '20세 이하' && emotion === '부정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["negative_female_young"];
+        } else if (gender === 'female' && age === '20세 이하' && emotion === '중립') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["neutral_female_young"];
+        } else if (gender === 'female' && age === '20~39세' && emotion === '긍정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["positive_female_adult"];
+        } else if (gender === 'female' && age === '20~39세' && emotion === '부정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["negative_female_adult"];
+        } else if (gender === 'female' && age === '20~39세' && emotion === '중립') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["neutral_female_adult"];
+        } else if (gender === 'female' && age === '40세 이상' && emotion === '긍정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["positive_female_senior"];
+        } else if (gender === 'female' && age === '40세 이상' && emotion === '부정') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["negative_female_senior"];
+        } else if (gender === 'female' && age === '40세 이상' && emotion === '중립') {
+            recommendationText = languageData[currentLanguage]["recommend_comment"]["neutral_female_senior"];
+        } else {
+            console.log('없데영', gender, age, emotion)
+        }
+
+        // 추천 문구 업데이트
+        recommendationElement.innerText = recommendationText || "No recommendation available.";
+    }
     // 번역 적용 함수
     function applyTranslations(languageData) {
         // 일반 UI 텍스트 번역
-        
-   
         document.querySelector(".senior_navbar a:nth-child(1)").innerText = languageData["recommend_menu"];
         document.querySelector(".senior_navbar a:nth-child(2)").innerText = languageData["coffee_menu"];
         document.querySelector(".senior_navbar a:nth-child(3)").innerText = languageData["tea_menu"];
@@ -220,7 +265,7 @@
         document.querySelector("#paymentModal .senior_payment-options button:nth-child(2)").innerText = languageData["payment_cash"];
         document.querySelector("#paymentModal .senior_store-options button:nth-child(1)").innerText = languageData["payment_dine_in"];
         document.querySelector("#paymentModal .senior_store-options button:nth-child(2)").innerText = languageData["payment_take_out"];
-
+        updateRecommendations();
         // 이전/다음 메뉴 버튼 번역
 
         const paginationButtons = document.querySelectorAll(".senior_page-btn");

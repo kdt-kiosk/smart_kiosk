@@ -41,7 +41,6 @@ function updateQuantity(itemId, action) {
             if (data.success) {
                 // 서버로부터 받은 HTML로 장바구니 내용 업데이트
                 document.getElementById("cart").innerHTML = data.cart_html;
-                console.log('data.cart_html',data.cart_html);
                 reapplyCartTranslations(); // 번역 재적용
             } else {
                 console.error('수량 업데이트 실패:', data.error);

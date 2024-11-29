@@ -27,6 +27,7 @@
             "HOT_아메리카노": "HOT_아메리카노",
             "ICE_아메리카노": "ICE_아메리카노",
             "HOT_카페라떼": "HOT_카페 라떼",
+            "ICE_카페라떼": "ICE_카페 라떼",
             "ICE_콜드브루라떼": "ICE_콜드브루라떼",
             "HOT_콜드브루라떼": "HOT콜드브루라떼",
             "ICE_라임모히또": "ICE_라임 모히또",
@@ -34,6 +35,27 @@
             "ICE_캐모마일": "ICE_캐모마일",
             "ICE_레몬차": "ICE_레몬차",
             "ICE_허니자몽블랙티": "ICE_허니 자몽 블랙티"
+        },
+        "recommend_comment": {
+            "positive_male_young": "활기찬 에너지를 느낄 수 있는 신나는 메뉴를 즐겨보세요!",
+            "negative_male_young": "기분을 전환할 수 있는 특별한 메뉴를 만나보세요.",
+            "neutral_male_young": "간단하면서도 만족스러운 클래식 메뉴를 추천합니다.",
+            "positive_male_adult": "성공적인 하루를 축하하며 프리미엄 메뉴를 즐겨보세요!",
+            "negative_male_adult": "따뜻한 메뉴로 마음을 환하게 만들어보세요.",
+            "neutral_male_adult": "바쁜 일상 속에서 균형 잡힌 선택을 즐겨보세요.",
+            "positive_male_senior": "삶의 여유를 만끽할 수 있는 추천 메뉴를 즐겨보세요.",
+            "negative_male_senior": "마음을 진정시키는 따뜻한 메뉴를 즐겨보세요.",
+            "neutral_male_senior": "시간이 지나도 변하지 않는 클래식 메뉴를 추천합니다.",
+            "positive_female_young": "즐거운 하루를 위한 재미있고 매력적인 메뉴를 만나보세요!",
+            "negative_female_young": "달콤하고 위로가 되는 특별한 메뉴를 만나보세요.",
+            "neutral_female_young": "균형 잡힌 선택으로 하루를 완성해보세요.",
+            "positive_female_adult": "매 순간을 축하하며 프리미엄 메뉴를 즐겨보세요!",
+            "negative_female_adult": "편안함을 느낄 수 있는 따뜻한 메뉴를 추천합니다.",
+            "neutral_female_adult": "편리함과 맛을 함께 즐길 수 있는 균형 잡힌 메뉴를 추천합니다.",
+            "positive_female_senior": "세련된 선택으로 우아함을 더해보세요.",
+            "negative_female_senior": "마음을 진정시킬 수 있는 따뜻하고 포근한 메뉴를 즐겨보세요.",
+            "neutral_female_senior": "시간이 지나도 변함없는 클래식 메뉴를 추천합니다.",
+            "no_custom": "지금은 맞춤 추천을 제공할 수 없습니다."
         }
     },
     "en": {
@@ -73,6 +95,27 @@
         "previous_menu": "Previous Menu",
         "next_menu": "Next Menu",
         "pay_button": "Pay",
-        "cancel_button": "Cancel"
+        "cancel_button": "Cancel",
+        "recommend_comment": {
+            "positive_male_young": "Enjoy an exciting menu that will leave you feeling energetic!",
+            "negative_male_young": "Experience a special menu that will change your mood.",
+            "neutral_male_young": "We recommend the simple yet satisfying classic menu.",
+            "positive_male_adult": "Celebrate a successful day and enjoy our premium menu!",
+            "negative_male_adult": "Brighten your heart with our warm menu.",
+            "neutral_male_adult": "Enjoy balanced choices in your busy daily life.",
+            "positive_male_senior": "Enjoy our recommended menus that will help you enjoy leisurely life.",
+            "negative_male_senior": "Enjoy our warm menu that will soothe your mind.",
+            "neutral_male_senior": "We recommend classic menus that do not change over time.",
+            "positive_female_young": "Experience a fun and attractive menu for a fun day!",
+            "negative_female_young": "Experience a special menu that is sweet and comforting.",
+            "neutral_female_young": "Complete your day with balanced choices.",
+            "positive_female_adult": "Celebrate every moment and enjoy our premium menu!",
+            "negative_female_adult": "We recommend a warm menu that will make you feel comfortable.",
+            "neutral_female_adult": "We recommend a balanced menu that allows you to enjoy both convenience and taste.",
+            "positive_female_senior": "Add elegance with sophisticated choices.",
+            "negative_female_senior": "Enjoy our warm and cozy menu that will soothe your mind.",
+            "neutral_female_senior": "We recommend classic menus that will stand the test of time.",
+            "no_custom": "We are unable to provide personalized recommendations at this time."
+        }
     }
 }
