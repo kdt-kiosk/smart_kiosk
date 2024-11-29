@@ -125,6 +125,7 @@ def index():
 @app.route('/video_feed')
 def video_feed():
     global redirect_url
+    print('redirect_irl은??',redirect_url)
     if redirect_url:
         return f"REDIRECT:{redirect_url}"
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -335,7 +336,55 @@ def home():
         total_pages=total_pages,
         category=category  # 현재 카테고리를 전달
     )
+@senior.route('/recommend', methods=['GET', 'POST'])
+def recommend():
+    test_image_path = os.path.join('uploads', 'test_image.jpg')
+    cart = session.get("cart", [])
+    total_price = sum(item["price"] * item["quantity"] for item in cart)
+    page = int(request.args.get('page', 1))  # 기본 페이지 번호는 1
+    # 성별 및 감정 예측 수행
+    if os.path.exists(test_image_path):
+        gender = predict_gender(test_image_path)
+        age = predict_age(test_image_path)
+        emotion = predict_emo(test_image_path)  # 감정 예측 수행
+        session['gender'] = gender  # 세션에 성별 저장
+    else:
+        gender = session.get('gender', 'female')  # 기본값을 'female'로 설정
+        emotion = "중립"  # 기본값으로 "중립" 감정 설정
 
+    # 성별에 따라 추천 메뉴 필터링
+    if gender == 'male':
+        recommended_menu = [item for item in menu_items if item["category"] == "coffee"]
+    else:
+        recommended_menu = [item for item in menu_items if item["category"] in ["tea", "beverage"]]
+     # 페이지네이션 처리
+    start = (page - 1) * SENIOR_ITEMS_PER_PAGE
+    end = start + SENIOR_ITEMS_PER_PAGE
+    paginated_menu = recommended_menu[start:end]
+    total_pages = (len(recommended_menu) + SENIOR_ITEMS_PER_PAGE - 1) // SENIOR_ITEMS_PER_PAGE
+    # page가 범위 안에 있도록 설정
+    if page < 1:
+        page = 1
+    elif page > total_pages:
+        page = total_pages
+    
+    # 디버깅: gender와 emotion 값 출력
+    print("Predicted gender, emotion:", gender,emotion)
+    #print("Predicted emotion:", emotion)
+    print("Recommended menu items:", [item["name"] for item in recommended_menu])
+    
+    return render_template(
+        'senior_recommend.html',
+        menu=paginated_menu,
+        cart=cart,
+        total_price=total_price,
+        page=page,
+        total_pages=total_pages,
+        gender=gender,  # gender 변수를 템플릿에 전달
+        age=age,  # age 변수를 템플릿에 전달
+        emotion=emotion,  # emotion 변수를 템플릿에 전달
+        category='recommend'  # 'recommend' 페이지임을 템플릿에 전달
+    )
 # 카트에 아이템 추가 라우트
 @senior.route('/add_to_cart/<int:item_id>', methods=['POST'])
 def add_to_cart(item_id):

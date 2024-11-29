@@ -12,15 +12,18 @@
     <div class="senior_container">
         <!-- 네비게이션 바 -->
         <nav class="senior_navbar">
-            <a href="{{ url_for('senior.home', category='tea') }}">추천 메뉴</a>
+            <a href="{{ url_for('senior.recommend') }}"
+                class="{% if category == 'recommend' %}active{% endif %}">추천메뉴</a>
             <a href="{{ url_for('senior.home', category='coffee') }}">커피 메뉴</a>
+            <a href="{{ url_for('senior.home', category='tea') }}">차 메뉴</a>
+
             <a href="{{ url_for('senior.home', category='beverage') }}">음료 메뉴</a>
             <!-- 언어 선택 버튼 -->
             <button class="senior_lang-btn" onclick="openLanguageModal()">Language</button>
         </nav>
 
         <!-- 언어 선택 모달 윈도우 -->
-        <div id="languageModal" class="modal">
+        <div id="languageModal" class="modal" style="display: none;">
             <div class="senior_modal-content">
                 <h2>Select Language</h2>
                 <div class="senior_language-grid">
@@ -28,12 +31,7 @@
                     <button onclick="setLanguage('zh')">中文</button>
                     <button onclick="setLanguage('en')">English</button>
                     <button onclick="setLanguage('ja')">日本語</button>
-                    <button onclick="setLanguage('fr')">Français</button>
-                    <button onclick="setLanguage('de')">Deutsch</button>
-                    <button onclick="setLanguage('es')">Español</button>
-                    <button onclick="setLanguage('it')">Italiano</button>
-                    <button onclick="setLanguage('pt')">Português</button>
-                    <button onclick="setLanguage('ru')">Русский</button>
+
                 </div>
                 <button class="senior_back-btn" onclick="closeLanguageModal()">Back</button>
             </div>
@@ -105,15 +103,19 @@
 
 </html>
 <script>
-    // 페이지 로드 시 저장된 언어 적용
-    window.onload = async function () {
-        const savedLanguage = sessionStorage.getItem("selectedLanguage") || "ko";
+    // 번역 데이터를 저장할 전역 객체
+    let languageData = {}; // 초기화
+    async function fetchTranslationData() {
         const response = await fetch("{{ url_for('static', filename='translation/translations.json') }}");
-        const translations = await response.json();
-        if (translations[savedLanguage]) {
-            applyTranslations(translations[savedLanguage]);
+        languageData = await response.json(); // 번역 데이터 로드
+    }
+    // 페이지 로드 시 실행
+    window.onload = async function () {
+        await fetchTranslationData(); // 번역 데이터 초기화
+        const savedLanguage = sessionStorage.getItem("selectedLanguage") || "ko"; // 저장된 언어 가져오기
+        if (languageData[savedLanguage]) {
+            applyTranslations(languageData[savedLanguage]); // 번역 적용
         }
-        
     };
     function openLanguageModal() {
         document.getElementById("languageModal").style.display = "flex";
@@ -125,34 +127,29 @@
 
 
 
+    // 장바구니에 추가하는 함수
     function addToCart(itemId) {
         fetch(`/senior/add_to_cart/${itemId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
         })
-            .then(response => response.json())
-            .then(data => {
+            .then((response) => response.json())
+            .then((data) => {
                 if (data.success) {
-                    // 서버로부터 받은 카트 HTML을 업데이트
                     document.getElementById("cart").innerHTML = data.cart_html;
-    
-                    // 번역된 이름으로 카트 아이템 업데이트
-                    const cartItems = document.querySelectorAll(".cart-item-name");
-                    cartItems.forEach(cartItem => {
-                        const originalName = cartItem.getAttribute("data-name"); // 번역 전 이름
-                        if (languageData["menu_items"] && languageData["menu_items"][originalName]) {
-                            cartItem.innerText = languageData["menu_items"][originalName]; // 번역된 이름 적용
-                        }
-                    });
-    
-                    // 가이드 메시지를 번역된 이름으로 업데이트
-                    const selectedItem = document.querySelector(`.senior_menu-item[data-id='${itemId}'] h2`).innerText;
-                    updateGuideMessage(`${selectedItem}이(가) 장바구니에 추가되었습니다.`);
+                    applyTranslations(languageData[currentLanguage]); // Reapply translations
+                    const selectedItemElement = document.querySelector(
+                        `.senior_menu-item[data-id='${itemId}'] h2`
+                    );
+                    if (selectedItemElement) {
+                        const selectedItem = selectedItemElement.innerText;
+                        updateGuideMessage(`${selectedItem} has been added to the cart.`);
+                    }
                 } else {
-                    alert("장바구니에 추가하는 중 문제가 발생했습니다.");
+                    alert("An issue occurred while adding to the cart.");
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch((error) => console.error("Error:", error));
     }
 
     function updateGuideMessage(message) {
@@ -160,7 +157,7 @@
     }
 
 
-    
+
 
 
     function openPaymentModal() {
@@ -173,13 +170,12 @@
 
     let currentLanguage = "ko"; // 기본 언어는 한국어
 
-    // 언어 상태를 세션 스토리지에 저장
+    // 언어 변경 함수
     async function setLanguage(lang) {
+        currentLanguage = lang; // 글로벌 언어 상태 업데이트
         sessionStorage.setItem("selectedLanguage", lang);
-        const response = await fetch("{{ url_for('static', filename='translation/translations.json') }}");
-        const translations = await response.json();
-        if (translations[lang]) {
-            applyTranslations(translations[lang]);
+        if (languageData[lang]) {
+            applyTranslations(languageData[lang]);
         }
         closeLanguageModal();
     }
@@ -192,7 +188,8 @@
         document.getElementById("guideMessage").innerText = languageData["guide_message"];
         document.querySelector(".senior_navbar a:nth-child(1)").innerText = languageData["recommend_menu"];
         document.querySelector(".senior_navbar a:nth-child(2)").innerText = languageData["coffee_menu"];
-        document.querySelector(".senior_navbar a:nth-child(3)").innerText = languageData["beverage_menu"];
+        document.querySelector(".senior_navbar a:nth-child(3)").innerText = languageData["tea_menu"];
+        document.querySelector(".senior_navbar a:nth-child(4)").innerText = languageData["beverage_menu"];
         document.querySelector(".senior_lang-btn").innerText = languageData["language_button"];
         document.querySelector("#paymentModal h2").innerText = languageData["payment_title"];
         document.querySelector("#paymentModal .senior_payment-options button:nth-child(1)").innerText = languageData["payment_card"];
@@ -201,42 +198,43 @@
         document.querySelector("#paymentModal .senior_store-options button:nth-child(2)").innerText = languageData["payment_take_out"];
 
         // 이전/다음 메뉴 버튼 번역
-        const paginationButtons = document.querySelectorAll(".senior_page-btn");
-        const page = {{ page }};
-        const total_pages = {{ total_pages }};
-        if (paginationButtons.length > 0) {
-            if (page == 1) {
-                paginationButtons[0].innerText = languageData["next_menu"] || "Next Menu";
-            }
-            else {
-                if (paginationButtons[0]) paginationButtons[0].innerText = languageData["previous_menu"] || "Previous Menu";
-                if (paginationButtons[1]) paginationButtons[1].innerText = languageData["next_menu"] || "Next Menu";
-            }
 
+        const paginationButtons = document.querySelectorAll(".senior_page-btn");
+        const page = {{ page }}
+
+    const total_pages = {{ total_pages }};
+    if (paginationButtons.length > 0) {
+        if (page == 1) {
+            paginationButtons[0].innerText = languageData["next_menu"] || "Next Menu";
+        }
+        else {
+            if (paginationButtons[0]) paginationButtons[0].innerText = languageData["previous_menu"] || "Previous Menu";
+            if (paginationButtons[1]) paginationButtons[1].innerText = languageData["next_menu"] || "Next Menu";
         }
 
-        // 메뉴 항목 번역
-        const menuItems = document.querySelectorAll(".senior_menu-item h2");
-        menuItems.forEach(item => {
-            const originalName = item.getAttribute("data-name");
-            if (languageData["menu_items"][originalName]) {
-                item.innerText = languageData["menu_items"][originalName];
-                console.log('여기실행중임');
-            }
-        });
-
-        // 결제, 취소 버튼 번역
-        document.querySelector(".senior_payment-btn").innerText = languageData["pay_button"] || "Pay";
-        document.querySelector(".senior_cancel-btn").innerText = languageData["cancel_button"] || "Cancel";
-        const cartItems = document.querySelectorAll(".cart-item-name");
-cartItems.forEach(cartItem => {
-    const originalName = cartItem.getAttribute("data-name");
-    if (languageData["menu_items"] && languageData["menu_items"][originalName]) {
-        cartItem.innerText = languageData["menu_items"][originalName];
     }
-});
+
+    // 메뉴 항목 번역
+    const menuItems = document.querySelectorAll(".senior_menu-item h2");
+    menuItems.forEach((item) => {
+        const originalName = item.getAttribute("data-name");
+        if (languageData["menu_items"][originalName]) {
+            item.innerText = languageData["menu_items"][originalName];
+        }
+    });
+
+    // 결제, 취소 버튼 번역
+    document.querySelector(".senior_payment-btn").innerText = languageData["pay_button"] || "Pay";
+    document.querySelector(".senior_cancel-btn").innerText = languageData["cancel_button"] || "Cancel";
+    const cartItems = document.querySelectorAll(".cart-item-name");
+    cartItems.forEach((cartItem) => {
+        const originalName = cartItem.getAttribute("data-name");
+        if (languageData["menu_items"][originalName]) {
+            cartItem.innerText = languageData["menu_items"][originalName];
+        }
+    });
 
     }
-    
+
 
 </script>

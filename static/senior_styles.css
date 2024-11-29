@@ -83,16 +83,17 @@
 .senior_language-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 40px;
     margin: 20px 0;
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     justify-content: center;
 }
 
 .senior_language-grid button {
     padding: 30px;
-    font-size: 18px;
+    font-size: 100px;
+     /* 버튼의 높이를 100px로 설정 */
     cursor: pointer;
     border-radius: 8px;
     border: 1px solid #ccc;
