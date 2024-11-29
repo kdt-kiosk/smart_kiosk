@@ -4,7 +4,8 @@
 <ul>
     {% for cart_item in cart %}
     <li>
-        <span class="cart-item-name" data-name="{{ cart_item.name }}">{{ cart_item.name }}</span>
+        <span class="cart-item-name" data-name="{{ cart_item.name }}">
+            {{ cart_item.name }}</span>
         ${{ cart_item.price }} x {{ cart_item.quantity }}
         <div class="quantity-controls">
             <a href="javascript:void(0)" onclick="updateQuantity('{{ cart_item.id }}', 'decrease')">-</a>
@@ -19,14 +20,13 @@
 <script>
 // 장바구니 항목의 번역을 다시 적용하는 함수
 function reapplyCartTranslations() {
-    const cartItems = document.querySelectorAll(".cart-item-name"); // 모든 장바구니 항목 선택
+    const cartItems = document.querySelectorAll(".cart-item-name");
     cartItems.forEach(cartItem => {
-        const originalName = cartItem.getAttribute("data-name"); // 번역 전 이름 가져오기
-        if (languageData["menu_items"] && languageData["menu_items"][originalName]) {
-            cartItem.innerText = languageData["menu_items"][originalName]; // 현재 언어로 번역 적용
+        const originalName = cartItem.getAttribute("data-name");
+        if (languageData[currentLanguage]?.menu_items?.[originalName]) {
+            cartItem.innerText = languageData[currentLanguage].menu_items[originalName];
         }
     });
-    console.log("장바구니 항목에 번역 재적용 완료:", currentLanguage); // 디버깅 로그
 }
 
 // 장바구니 수량 업데이트 함수
@@ -41,6 +41,7 @@ function updateQuantity(itemId, action) {
             if (data.success) {
                 // 서버로부터 받은 HTML로 장바구니 내용 업데이트
                 document.getElementById("cart").innerHTML = data.cart_html;
+                console.log('data.cart_html',data.cart_html);
                 reapplyCartTranslations(); // 번역 재적용
             } else {
                 console.error('수량 업데이트 실패:', data.error);

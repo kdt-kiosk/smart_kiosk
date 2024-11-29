@@ -227,6 +227,7 @@ def recommend():
 
 # 카트에 아이템 추가 라우트
 @app.route('/add_to_cart/<int:item_id>', methods=['POST'])
+@senior.route('/add_to_cart/<int:item_id>', methods=['POST'])
 def add_to_cart(item_id):
     item = next((item for item in menu_items if item["id"] == item_id), None)
     if item:
@@ -242,14 +243,16 @@ def add_to_cart(item_id):
             cart.append({"id": item["id"], "name": item["name"], "price": item["price"], "quantity": 1})
 
         session.modified = True
-
+        current_language = session.get('language', 'ko')
         # 장바구니 HTML을 다시 렌더링하여 JSON 응답으로 반환
-        cart_html = render_template('cart_partial.html', cart=cart, total_price=sum(item["price"] * item["quantity"] for item in cart))
+        cart_html = render_template('cart_partial.html', cart=cart, total_price=sum(item["price"] * item["quantity"] for item in cart),
+                                    current_language=current_language)
         return jsonify(success=True, cart_html=cart_html)
     return jsonify(success=False)
 
 # 아이템 수량 증가감소 라우트
 @app.route('/update_quantity/<int:item_id>/<string:action>', methods=['POST'])
+@senior.route('/update_quantity/<int:item_id>/<string:action>', methods=['POST'])
 def update_quantity(item_id, action):
     cart = session.get("cart", [])
     
@@ -266,13 +269,17 @@ def update_quantity(item_id, action):
     
     session["cart"] = cart
     session.modified = True
+    # 세션에서 언어 가져오기
+    current_language = session.get('language', 'ko')
 
     # 새롭게 렌더링된 카트 HTML을 반환
-    cart_html = render_template('cart_partial.html', cart=cart, total_price=sum(item["price"] * item["quantity"] for item in cart))
+    cart_html = render_template('cart_partial.html', cart=cart, total_price=sum(item["price"] * item["quantity"] for item in cart),
+                       current_language=current_language)
     return jsonify({"success": True, "cart_html": cart_html})
 
 # 아이템 삭제 라우트
 @app.route('/remove_item/<int:item_id>', methods=['POST'])
+@senior.route('/remove_item/<int:item_id>', methods=['POST'])
 def remove_item(item_id):
     cart = session.get("cart", [])
     session["cart"] = [item for item in cart if item["id"] != item_id]
@@ -284,6 +291,7 @@ def remove_item(item_id):
 
 # 카트 페이지 라우트
 @app.route('/cart')
+@senior.route('/cart')
 def cart():
     cart = session.get("cart", [])
     total_price = sum(item["price"] * item["quantity"] for item in cart)
@@ -385,69 +393,6 @@ def recommend():
         emotion=emotion,  # emotion 변수를 템플릿에 전달
         category='recommend'  # 'recommend' 페이지임을 템플릿에 전달
     )
-# 카트에 아이템 추가 라우트
-@senior.route('/add_to_cart/<int:item_id>', methods=['POST'])
-def add_to_cart(item_id):
-    item = next((item for item in menu_items if item["id"] == item_id), None)
-    if item:
-        if "cart" not in session:
-            session["cart"] = []
-        cart = session["cart"]
-
-        # 카트에 같은 항목이 있을 경우 수량을 증가
-        existing_item = next((cart_item for cart_item in cart if cart_item["id"] == item_id), None)
-        if existing_item:
-            existing_item["quantity"] += 1
-        else:
-            cart.append({"id": item["id"], "name": item["name"], "price": item["price"], "quantity": 1})
-
-        session.modified = True
-
-        # 장바구니 HTML을 다시 렌더링하여 JSON 응답으로 반환
-        cart_html = render_template('cart_partial.html', cart=cart, total_price=sum(item["price"] * item["quantity"] for item in cart))
-        return jsonify(success=True, cart_html=cart_html)
-    return jsonify(success=False)
-
-# 아이템 수량 증가감소 라우트
-@senior.route('/update_quantity/<int:item_id>/<string:action>', methods=['POST'])
-def update_quantity(item_id, action):
-    cart = session.get("cart", [])
-    
-    for item in cart:
-        if item["id"] == item_id:
-            if action == 'increase':
-                item["quantity"] += 1
-            elif action == 'decrease':
-                if item["quantity"] > 1:
-                    item["quantity"] -= 1
-                else:
-                    cart.remove(item)
-            break
-    
-    session["cart"] = cart
-    session.modified = True
-
-    # 새롭게 렌더링된 카트 HTML을 반환
-    cart_html = render_template('cart_partial.html', cart=cart, total_price=sum(item["price"] * item["quantity"] for item in cart))
-    return jsonify({"success": True, "cart_html": cart_html})
-
-# 아이템 삭제 라우트
-@senior.route('/remove_item/<int:item_id>', methods=['POST'])
-def remove_item(item_id):
-    cart = session.get("cart", [])
-    session["cart"] = [item for item in cart if item["id"] != item_id]
-    session.modified = True
-
-    # 새롭게 렌더링된 카트 HTML을 반환
-    cart_html = render_template('cart_partial.html', cart=session["cart"], total_price=sum(item["price"] * item["quantity"] for item in session["cart"]))
-    return jsonify({"success": True, "cart_html": cart_html})
-
-# 카트 페이지 라우트
-@senior.route('/cart')
-def cart():
-    cart = session.get("cart", [])
-    total_price = sum(item["price"] * item["quantity"] for item in cart)
-    return render_template('cart.html', cart=cart, total_price=total_price)
 
 # 새로운 체크아웃 라우트
 @senior.route('/checkout')
@@ -457,12 +402,19 @@ def checkout():
   # 메인 페이지로 리디렉션
 
 
+# 공통 라우트 정의
+@app.route('/set_language/<string:lang>', methods=['POST'])
+@senior.route('/set_language/<string:lang>', methods=['POST'])
+def set_language(lang):
+    # Flask 세션에 언어 저장
+    session['language'] = lang
+    return jsonify(success=True, language=lang)
 
-@app.route("/update_button_coords", methods=["POST"])
-def update_button_coords():
-    global button_coordinates
-    button_coordinates = request.json.get("buttons", {})
-    return jsonify({"success": True})
+@app.route('/get_language', methods=['GET'])
+@senior.route('/get_language', methods=['GET'])
+def get_language():
+    current_language = session.get('language', 'ko')  # 기본값: 'ko'
+    return jsonify(language=current_language)
 # Blueprint 등록
 app.register_blueprint(senior)
 

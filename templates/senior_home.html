@@ -109,12 +109,24 @@
         const response = await fetch("{{ url_for('static', filename='translation/translations.json') }}");
         languageData = await response.json(); // 번역 데이터 로드
     }
+    async function fetchLanguageFromServer() {
+        return fetch('/get_language', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => data.language || 'ko') // 기본값: 'ko'
+            .catch(error => {
+                console.error('Error fetching language:', error);
+                return 'ko'; // 에러 발생 시 기본값
+            });
+    }
+    
     // 페이지 로드 시 실행
     window.onload = async function () {
         await fetchTranslationData(); // 번역 데이터 초기화
-        const savedLanguage = sessionStorage.getItem("selectedLanguage") || "ko"; // 저장된 언어 가져오기
+        const savedLanguage = await fetchLanguageFromServer(); // 서버에서 언어 가져오기
+        currentLanguage = savedLanguage;
         if (languageData[savedLanguage]) {
             applyTranslations(languageData[savedLanguage]); // 번역 적용
+            reapplyCartTranslations(); // 장바구니 번역 재적용
         }
     };
     function openLanguageModal() {
@@ -172,12 +184,23 @@
 
     // 언어 변경 함수
     async function setLanguage(lang) {
-        currentLanguage = lang; // 글로벌 언어 상태 업데이트
-        sessionStorage.setItem("selectedLanguage", lang);
-        if (languageData[lang]) {
-            applyTranslations(languageData[lang]);
-        }
-        closeLanguageModal();
+        // Flask 세션에 언어 업데이트
+        await fetch(`/set_language/${lang}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`Language set to ${data.language}`);
+                    currentLanguage = data.language; // 현재 언어 업데이트
+                    if (languageData[currentLanguage]) {
+                        applyTranslations(languageData[currentLanguage]); // 번역 적용
+                        reapplyCartTranslations(); // 장바구니 번역 재적용
+                    }
+                }
+            })
+            .catch(error => console.error('Error setting language:', error));
     }
 
     // 번역 관련
@@ -202,37 +225,37 @@
         const paginationButtons = document.querySelectorAll(".senior_page-btn");
         const page = {{ page }}
 
-    const total_pages = {{ total_pages }};
-    if (paginationButtons.length > 0) {
-        if (page == 1) {
-            paginationButtons[0].innerText = languageData["next_menu"] || "Next Menu";
-        }
-        else {
-            if (paginationButtons[0]) paginationButtons[0].innerText = languageData["previous_menu"] || "Previous Menu";
-            if (paginationButtons[1]) paginationButtons[1].innerText = languageData["next_menu"] || "Next Menu";
+        const total_pages = {{ total_pages }};
+        if (paginationButtons.length > 0) {
+            if (page == 1) {
+                paginationButtons[0].innerText = languageData["next_menu"] || "Next Menu";
+            }
+            else {
+                if (paginationButtons[0]) paginationButtons[0].innerText = languageData["previous_menu"] || "Previous Menu";
+                if (paginationButtons[1]) paginationButtons[1].innerText = languageData["next_menu"] || "Next Menu";
+            }
+
         }
 
-    }
+        // 메뉴 항목 번역
+        const menuItems = document.querySelectorAll(".senior_menu-item h2");
+        menuItems.forEach((item) => {
+            const originalName = item.getAttribute("data-name");
+            if (languageData["menu_items"][originalName]) {
+                item.innerText = languageData["menu_items"][originalName];
+            }
+        });
 
-    // 메뉴 항목 번역
-    const menuItems = document.querySelectorAll(".senior_menu-item h2");
-    menuItems.forEach((item) => {
-        const originalName = item.getAttribute("data-name");
-        if (languageData["menu_items"][originalName]) {
-            item.innerText = languageData["menu_items"][originalName];
-        }
-    });
-
-    // 결제, 취소 버튼 번역
-    document.querySelector(".senior_payment-btn").innerText = languageData["pay_button"] || "Pay";
-    document.querySelector(".senior_cancel-btn").innerText = languageData["cancel_button"] || "Cancel";
-    const cartItems = document.querySelectorAll(".cart-item-name");
-    cartItems.forEach((cartItem) => {
-        const originalName = cartItem.getAttribute("data-name");
-        if (languageData["menu_items"][originalName]) {
-            cartItem.innerText = languageData["menu_items"][originalName];
-        }
-    });
+        // 결제, 취소 버튼 번역
+        document.querySelector(".senior_payment-btn").innerText = languageData["pay_button"] || "Pay";
+        document.querySelector(".senior_cancel-btn").innerText = languageData["cancel_button"] || "Cancel";
+        const cartItems = document.querySelectorAll(".cart-item-name");
+        cartItems.forEach((cartItem) => {
+            const originalName = cartItem.getAttribute("data-name");
+            if (languageData["menu_items"][originalName]) {
+                cartItem.innerText = languageData["menu_items"][originalName];
+            }
+        });
 
     }
 

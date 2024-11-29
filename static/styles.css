@@ -92,6 +92,8 @@ h1 {
 
 .language-grid button {
     padding: 30px;
+    font-size: 100px;
+    /* 버튼의 높이를 100px로 설정 */
     font-size: 18px;
     cursor: pointer;
     border-radius: 8px;
