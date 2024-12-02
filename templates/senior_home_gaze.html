@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cafe Kiosk - Gaze Mode</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='senior_styles.css') }}">
+    <style>
+        /* 시선 포인터 스타일 */
+        #gaze-pointer {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: red;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gaze-pointer"></div> <!-- 시선 포인터 -->
+    <div class="senior_container">
+        <!-- 네비게이션 바 -->
+        <nav class="senior_navbar">
+            <a href="{{ url_for('senior.recommend') }}"
+                class="{% if category == 'recommend' %}active{% endif %}">추천메뉴</a>
+            <a href="{{ url_for('senior.home', category='coffee') }}">커피 메뉴</a>
+            <a href="{{ url_for('senior.home', category='tea') }}">차 메뉴</a>
+            <a href="{{ url_for('senior.home', category='beverage') }}">음료 메뉴</a>
+            <!-- 언어 선택 버튼 -->
+            <button class="senior_lang-btn" onclick="openLanguageModal()">Language</button>
+        </nav>
+
+        <!-- 언어 선택 모달 윈도우 -->
+        <div id="languageModal" class="modal" style="display: none;">
+            <div class="senior_modal-content">
+                <h2>Select Language</h2>
+                <div class="senior_language-grid">
+                    <button onclick="setLanguage('ko')">한국어</button>
+                    <button onclick="setLanguage('zh')">中文</button>
+                    <button onclick="setLanguage('en')">English</button>
+                    <button onclick="setLanguage('ja')">日本語</button>
+                </div>
+                <button class="senior_back-btn" onclick="closeLanguageModal()">Back</button>
+            </div>
+        </div>
+
+        <h1 id="feelMessage">천천히 골라주세요!</h1>
+        <h1 id="guideMessage">메뉴에서 항목을 선택해 장바구니에 추가하세요</h1>
+
+        <!-- 메뉴 리스트 -->
+        <div class="senior_menu-container">
+            <div class="senior_menu-grid">
+                {% for item in menu %}
+                <!-- 시선 추적을 위해 data-id 추가 -->
+                <div class="senior_menu-item" data-id="{{ item.id }}">
+                    <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}"
+                        class="senior_item-image">
+                    <h2 data-name="{{ item.name }}">{{ item.name }}</h2>
+                    <p data-price="{{ item.price }}">Price: ${{ item.price }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 이전/다음 페이지 버튼 -->
+            <div class="senior_pagination">
+                {% if page > 1 %}
+                <button class="senior_page-btn"
+                    onclick="window.location.href='{{ url_for('senior.home', category=category, page=page-1) }}'">이전
+                    메뉴</button>
+                {% endif %}
+
+                {% if page < total_pages %} <button class="senior_page-btn"
+                    onclick="window.location.href='{{ url_for('senior.home', category=category, page=page+1) }}'">다음
+                    메뉴</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 쇼핑 카트와 버튼을 담는 섹션 -->
+        <div class="senior_cart-container">
+            <div class="senior_cart" id="cart">
+                {% include 'cart_partial.html' %}
+            </div>
+
+            <!-- 결제 및 취소 버튼 -->
+            <div class="senior_action-buttons">
+                <button class="senior_payment-btn" onclick="openPaymentModal()">결제</button>
+                <button class="senior_cancel-btn" onclick="window.location.href='/'">취소</button>
+            </div>
+        </div>
+
+        <!-- 결제 모달 윈도우 -->
+        <div id="paymentModal" class="senior_modal">
+            <div class="senior_modal-content">
+                <h2>결제 방식을 선택하세요</h2>
+                <div class="senior_payment-options">
+                    <button onclick="alert('카드 결제를 선택했습니다')">카드 결제</button>
+                    <button onclick="alert('현금 결제를 선택했습니다')">현금 결제</button>
+                </div>
+                <div class="senior_store-options">
+                    <button onclick="alert('매장에서 드시겠습니까?')">매장에서</button>
+                    <button onclick="alert('포장하시겠습니까?')">포장</button>
+                </div>
+                <button class="senior_back-btn" onclick="closePaymentModal()">뒤로</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        const gazePointer = document.getElementById('gaze-pointer');
+        const items = document.querySelectorAll('.senior_menu-item');
+        const tolerance = 10; // 허용 떨림 범위
+        let startTime = null;
+        let inTargetTime = 0;
+
+        // 시선 데이터 수신
+        socket.on('gaze_data', (data) => {
+            const gazeX = data.x;
+            const gazeY = data.y;
+
+            // 시선 포인터 이동
+            gazePointer.style.left = `${gazeX}px`;
+            gazePointer.style.top = `${gazeY}px`;
+
+            // 메뉴 아이템 위에서 머무르는지 확인
+            items.forEach((item) => {
+                const rect = item.getBoundingClientRect();
+                const isInItem =
+                    gazeX >= rect.left - tolerance &&
+                    gazeX <= rect.right + tolerance &&
+                    gazeY >= rect.top - tolerance &&
+                    gazeY <= rect.bottom + tolerance;
+
+                if (isInItem) {
+                    if (!startTime) startTime = Date.now();
+                    else inTargetTime += Date.now() - startTime;
+
+                    // 2초 이상 머무르면 항목 추가
+                    if (inTargetTime >= 2000) {
+                        const itemId = item.getAttribute('data-id');
+                        addToCart(itemId);
+                        inTargetTime = 0; // 초기화
+                        startTime = null; // 초기화
+                    }
+                } else {
+                    startTime = null;
+                    inTargetTime = 0;
+                }
+            });
+        });
+
+        function addToCart(itemId) {
+            fetch(`/senior/add_to_cart/${itemId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        document.getElementById("cart").innerHTML = data.cart_html;
+                    }
+                });
+        }
+    </script>
+</body>
+
+</html>
+<script>
+    // 번역 데이터를 저장할 전역 객체
+    let languageData = {}; // 초기화
+    async function fetchTranslationData() {
+        const response = await fetch("{{ url_for('static', filename='translation/translations.json') }}");
+        languageData = await response.json(); // 번역 데이터 로드
+    }
+    async function fetchLanguageFromServer() {
+        return fetch('/get_language', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => data.language || 'ko') // 기본값: 'ko'
+            .catch(error => {
+                console.error('Error fetching language:', error);
+                return 'ko'; // 에러 발생 시 기본값
+            });
+    }
+    
+    // 페이지 로드 시 실행
+    window.onload = async function () {
+        await fetchTranslationData(); // 번역 데이터 초기화
+        const savedLanguage = await fetchLanguageFromServer(); // 서버에서 언어 가져오기
+        currentLanguage = savedLanguage;
+        if (languageData[savedLanguage]) {
+            applyTranslations(languageData[savedLanguage]); // 번역 적용
+            reapplyCartTranslations(); // 장바구니 번역 재적용
+        }
+    };
+    function openLanguageModal() {
+        document.getElementById("languageModal").style.display = "flex";
+    }
+
+    function closeLanguageModal() {
+        document.getElementById("languageModal").style.display = "none";
+    }
+
+
+
+    // 장바구니에 추가하는 함수
+    function addToCart(itemId) {
+        fetch(`/senior/add_to_cart/${itemId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    document.getElementById("cart").innerHTML = data.cart_html;
+                    applyTranslations(languageData[currentLanguage]); // Reapply translations
+                    const selectedItemElement = document.querySelector(
+                        `.senior_menu-item[data-id='${itemId}'] h2`
+                    );
+                    if (selectedItemElement) {
+                        const selectedItem = selectedItemElement.innerText;
+                        updateGuideMessage(`${selectedItem} has been added to the cart.`);
+                    }
+                } else {
+                    alert("An issue occurred while adding to the cart.");
+                }
+            })
+            .catch((error) => console.error("Error:", error));
+    }
+
+    function updateGuideMessage(message) {
+        document.getElementById("guideMessage").innerText = message;
+    }
+
+
+
+
+
+    function openPaymentModal() {
+        document.getElementById("paymentModal").style.display = "flex";
+    }
+
+    function closePaymentModal() {
+        document.getElementById("paymentModal").style.display = "none";
+    }
+
+    let currentLanguage = "ko"; // 기본 언어는 한국어
+
+    // 언어 변경 함수
+    async function setLanguage(lang) {
+        // Flask 세션에 언어 업데이트
+        await fetch(`/set_language/${lang}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(`Language set to ${data.language}`);
+                    currentLanguage = data.language; // 현재 언어 업데이트
+                    if (languageData[currentLanguage]) {
+                        applyTranslations(languageData[currentLanguage]); // 번역 적용
+                        reapplyCartTranslations(); // 장바구니 번역 재적용
+                    }
+                }
+            })
+            .catch(error => console.error('Error setting language:', error));
+    }
+
+    // 번역 관련
+    // 번역 적용 함수
+    function applyTranslations(languageData) {
+        // 일반 UI 텍스트 번역
+        document.getElementById("feelMessage").innerText = languageData["welcome_message"];
+        document.getElementById("guideMessage").innerText = languageData["guide_message"];
+        document.querySelector(".senior_navbar a:nth-child(1)").innerText = languageData["recommend_menu"];
+        document.querySelector(".senior_navbar a:nth-child(2)").innerText = languageData["coffee_menu"];
+        document.querySelector(".senior_navbar a:nth-child(3)").innerText = languageData["tea_menu"];
+        document.querySelector(".senior_navbar a:nth-child(4)").innerText = languageData["beverage_menu"];
+        document.querySelector(".senior_lang-btn").innerText = languageData["language_button"];
+        document.querySelector("#paymentModal h2").innerText = languageData["payment_title"];
+        document.querySelector("#paymentModal .senior_payment-options button:nth-child(1)").innerText = languageData["payment_card"];
+        document.querySelector("#paymentModal .senior_payment-options button:nth-child(2)").innerText = languageData["payment_cash"];
+        document.querySelector("#paymentModal .senior_store-options button:nth-child(1)").innerText = languageData["payment_dine_in"];
+        document.querySelector("#paymentModal .senior_store-options button:nth-child(2)").innerText = languageData["payment_take_out"];
+
+        // 이전/다음 메뉴 버튼 번역
+
+        const paginationButtons = document.querySelectorAll(".senior_page-btn");
+        const page = {{ page }}
+
+        const total_pages = {{ total_pages }};
+        if (paginationButtons.length > 0) {
+            if (page == 1) {
+                paginationButtons[0].innerText = languageData["next_menu"] || "Next Menu";
+            }
+            else {
+                if (paginationButtons[0]) paginationButtons[0].innerText = languageData["previous_menu"] || "Previous Menu";
+                if (paginationButtons[1]) paginationButtons[1].innerText = languageData["next_menu"] || "Next Menu";
+            }
+
+        }
+
+        // 메뉴 항목 번역
+        const menuItems = document.querySelectorAll(".senior_menu-item h2");
+        menuItems.forEach((item) => {
+            const originalName = item.getAttribute("data-name");
+            if (languageData["menu_items"][originalName]) {
+                item.innerText = languageData["menu_items"][originalName];
+            }
+        });
+
+        // 결제, 취소 버튼 번역
+        document.querySelector(".senior_payment-btn").innerText = languageData["pay_button"] || "Pay";
+        document.querySelector(".senior_cancel-btn").innerText = languageData["cancel_button"] || "Cancel";
+        const cartItems = document.querySelectorAll(".cart-item-name");
+        cartItems.forEach((cartItem) => {
+            const originalName = cartItem.getAttribute("data-name");
+            if (languageData["menu_items"][originalName]) {
+                cartItem.innerText = languageData["menu_items"][originalName];
+            }
+        });
+
+    }
+
+
+</script>

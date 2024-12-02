@@ -13,6 +13,12 @@ from predict_race_mobilenetv4 import predict_race  # 인종 예측 함수가 있
 from predict_emo_ddamfn import predict_emo
 import base64
 import requests
+from dotenv import load_dotenv
+from gaze_function import calibraion, resize_with_padding
+from collections import Counter
+import ctypes
+from flask_socketio import SocketIO
+from collections import deque
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -48,32 +54,39 @@ menu_items = load_images_from_folder("tea", start_id=1) \
 ITEMS_PER_PAGE = 12
 SENIOR_ITEMS_PER_PAGE = 4
 redirect_url = None  # 리디렉션 대상 URL
-
+gaze_switch = 0
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # 저장 폴더가 없으면 생성
 
 # yolov8 모델 로드
 face_model = YOLO("models/yolov11n-face.pt")  # yolov8 face 모델 경로 지정
-cap = cv2.VideoCapture(0)  # 웹캠 시작
+
+
+user32 = ctypes.windll.user32
+SCREEN_WIDTH = user32.GetSystemMetrics(0)
+SCREEN_HEIGHT = user32.GetSystemMetrics(1)
+socketio = SocketIO(app)
+gaze_point_history = deque(maxlen=8)
 
 # 얼굴 인식 변수
 face_detected = False
 face_detected_time = 0
 
-API_KEY = 'ROKfhV6XLDpXoVJuwNzI'
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
 
 # 카메라와 얼굴 사이의 거리(mm)
-DISTANCE_TO_OBJECT = 1000
+DISTANCE_TO_OBJECT = 570
 
 # 얼굴의 실제 세로 길이(mm)
-HEIGHT_OF_HUMAN_FACE = 300  # mm
+HEIGHT_OF_HUMAN_FACE = 170  # mm
 
 # 시선의 수평 방향 각도. 예시 0.05
 yaw_correction = 0
 
 # 시선의 수직 방향 각도. 예시 -0.03
-pitch_correction = 0.1
+pitch_correction = 0
 
 
 GAZE_DETECTION_URL = (
@@ -93,13 +106,16 @@ def detect_gazes(frame: np.ndarray):
     return gazes
         
 def generate_frames():
-    global face_detected, face_detected_time, redirect_url
+    global face_detected, face_detected_time, redirect_url, gaze_switch
     redirect_url = None
 
     left_start_time = None
     right_start_time = None
     threshold_time = 3  # 시선이 유지되어야 할 시간 (초)
 
+    cap = cv2.VideoCapture(0)  # 웹캠 시작
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # 자동 초점 비활성화
+    cap.set(cv2.CAP_PROP_FOCUS, 543) # 초점 설정
     while True:
         success, frame = cap.read()
         if not success:
@@ -129,8 +145,7 @@ def generate_frames():
                     save_path = os.path.join(UPLOAD_FOLDER, 'test_image.jpg')
                     cv2.imwrite(save_path, cropped_face)
 
-                    # 나이 분류 수행
-                    age = predict_age(save_path)
+                    
 
                 
                   
@@ -146,29 +161,51 @@ def generate_frames():
             image_height, image_width = frame.shape[:2]
             length_per_pixel = HEIGHT_OF_HUMAN_FACE / gaze["face"]["height"]
 
+            if not (-1 <= gaze["yaw"] <= 1):
+                print(f"유효하지 않은 yaw 값: {gaze['yaw']}")
+                continue
             dx = -DISTANCE_TO_OBJECT * np.tan(gaze["yaw"] + yaw_correction) / length_per_pixel
-            dx = dx if not np.isnan(dx) else 100000000
             gaze_point = int(image_width / 2 + dx), int(image_height / 2)
             print('gaze_point는??',gaze_point)
-            # 시선의 왼쪽/오른쪽 판단
-            if gaze_point[0] < image_width / 2:
+            # 시선의 왼쪽/오른쪽 판단 -> 왼쪽 : 마우스 클릭, 오른쪽이면 시선 클릭
+            if gaze_point[0] < image_width / 2: # 왼쪽에서 3초 이상 머문다면
                 if left_start_time is None:
                     left_start_time = time.time()
                 right_start_time = None
                 if time.time() - left_start_time >= threshold_time:
-                    if age == '40세 이상':
-                        redirect_url = '/senior/'  # 왼쪽에서 3초 이상 머물고, 40세이상이면 /senior으로 리디렉션
+                    # 나이 분류 수행
+                    age = predict_age(save_path)
+                    gaze_switch = 0
+                    if age == '40세 이상': # 시니어UI
+                        print(age)
+                        redirect_url = '/senior/'  # 40세이상이면 /senior 리디렉션
+                        cap.release()  # 카메라 자원 해제
                         break
-                    else:
-                        redirect_url = '/home'# 왼쪽에서 3초 이상 머물고, 40세이상이면 /home 리디렉션
+                    else: # 일반UI
+                        print(age)
+                        redirect_url = '/home' # 40세이상이 아니면 /home 리디렉션
+                        cap.release()  # 카메라 자원 해제
+                        break
                     
-            elif gaze_point[0] > image_width / 2:
+            elif gaze_point[0] > image_width / 2: # 오른쪽에서 3초 이상 머문다면
                 if right_start_time is None:
                     right_start_time = time.time()
                 left_start_time = None
                 if time.time() - right_start_time >= threshold_time:
-                    redirect_url = '/senior/'  # 오른쪽에서 3초 이상 머물면 /senior으로 리디렉션
-                    break
+                    # 나이 분류 수행
+                    age = predict_age(save_path)
+                    gaze_switch = 1
+                    if age == '40세 이상': # 시니어UI + 시선추정
+                        print(age, " 시선 클릭")
+                        redirect_url = '/senior/'  # 40세이상이면 /senior 리디렉션
+                        cap.release()  # 카메라 자원 해제
+                        break
+                    else: # 일반UI + 시선추정
+                        print(age," 시선 클릭")
+                        redirect_url = '/senior/' # 40세이상이 아니면 /home 리디렉션
+                        cap.release()  # 카메라 자원 해제
+                        break
+
             else:
                 left_start_time = None
                 right_start_time = None
@@ -184,8 +221,83 @@ def generate_frames():
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
 
+def gaze_tracking():
+    global gaze_switch
+    print("카메라 오픈!!!!")
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # 자동 초점 비활성화
+    cap.set(cv2.CAP_PROP_FOCUS, 543) # 초점 설정
+    if not cap.isOpened():
+        print("카메라를 열 수 없습니다.")
+        return
+
+    while gaze_switch == 1:
+        ret, frame = cap.read()
+        if not ret:
+            continue
+        frame = cv2.flip(frame, 1) # 좌우반전
+        frame = resize_with_padding(frame, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+        # 프레임을 Docker API로 전송
+        _, img_encoded = cv2.imencode(".jpg", frame)
+        img_base64 = base64.b64encode(img_encoded).decode("utf-8")
+
+        resp = requests.post(
+            GAZE_DETECTION_URL,
+            json={
+                "api_key": API_KEY,
+                "image": {"type": "base64", "value": img_base64},
+            },
+        )
+
+        # 응답에서 시선 좌표 추출
+        if resp.status_code == 200:
+            response_data = resp.json()  
+            gaze_data = response_data[0].get("predictions", [])
+            if gaze_data:
+                # yaw와 pitch 값을 읽어 화면 좌표로 변환
+                yaw = gaze_data[0].get("yaw")
+                pitch = gaze_data[0].get("pitch")
+                face_height = gaze_data[0]["face"]["height"]
+
+                # yaw 값의 범위가 -1과 1 사이가 아닐 경우 처리 건너뜀
+                if not (-1 <= yaw <= 1):
+                    print(f"유효하지 않은 yaw 값: {yaw}")
+                    continue
+
+                try:
+                    # yaw와 pitch를 화면 좌표로 변환
+                    length_per_pixel = HEIGHT_OF_HUMAN_FACE / face_height
+                    dx = -DISTANCE_TO_OBJECT * np.tan(yaw) / length_per_pixel
+                    dy = -DISTANCE_TO_OBJECT * np.arccos(yaw) * np.tan(pitch) / length_per_pixel
+
+                    # dx와 dy가 유효한지 확인
+                    if np.isnan(dx) or np.isnan(dy):
+                        print("유효하지 않은 dx 또는 dy 값")
+                        continue
+
+                    gaze_point = calibraion(int(SCREEN_WIDTH / 2 + dx), int(SCREEN_HEIGHT / 2 + dy))
+
+                except Exception as e:
+                    print(f"값 계산 중 오류 발생: {e}")
+                    continue
 
 
+                gaze_point_history.append(gaze_point)
+                # 최근 좌표 평균화
+                avg_x = int(np.mean([point[0] for point in gaze_point_history]))
+                avg_y = int(np.mean([point[1] for point in gaze_point_history]))
+                stabilized_gaze_point = (avg_x, avg_y)
+                # print(f"평균화된 시선 좌표: {stabilized_gaze_point}")
+
+                # WebSocket을 통해 브라우저로 시선 데이터 전송
+                socketio.emit('gaze_data', {'x': stabilized_gaze_point[0], 'y': stabilized_gaze_point[1]})
+
+            else:
+                print("시선 데이터를 감지하지 못했습니다.")
+        else:
+            print(f"API 요청 실패. 상태 코드: {resp.status_code}, 내용: {resp.text}")
+        time.sleep(0.033)  # 약 30 FPS
 
 # 첫 화면(카메라 화면) 라우트
 @app.route('/')
@@ -381,6 +493,7 @@ def checkout():
 # 시니어홈 페이지 라우트
 @senior.route('/')
 def home():
+    global gaze_switch
     # 선택된 카테고리와 페이지 번호를 가져옵니다.
     category = request.args.get('category')
     page = int(request.args.get('page', 1))  # 기본 페이지 번호는 1
@@ -405,18 +518,33 @@ def home():
     # 카트 정보 가져오기
     cart = session.get("cart", [])
     total_price = sum(item["price"] * item["quantity"] for item in cart if "quantity" in item)
-    print('토탈 페이지는',total_pages,page)
-    print('아이템은',paginated_menu)
+    # print('토탈 페이지는',total_pages,page)
+    # print('아이템은',paginated_menu)
     # home.html 템플릿으로 렌더링
-    return render_template(
-        'senior_home.html',
-        menu=paginated_menu,
-        cart=cart,
-        total_price=total_price,
-        page=page,
-        total_pages=total_pages,
-        category=category  # 현재 카테고리를 전달
-    )
+    if gaze_switch == 1:
+         # 스레드가 실행 중이 아니면 새로운 스레드 시작
+        if gaze_thread is None or not gaze_thread.is_alive():
+            gaze_thread = threading.Thread(target=gaze_tracking, daemon=True)
+            gaze_thread.start()
+        return render_template(
+            'senior_home_gaze.html',
+            menu=paginated_menu,
+            cart=cart,
+            total_price=total_price,
+            page=page,
+            total_pages=total_pages,
+            category=category  # 현재 카테고리를 전달
+        )
+    else:
+        return render_template(
+            'senior_home.html',
+            menu=paginated_menu,
+            cart=cart,
+            total_price=total_price,
+            page=page,
+            total_pages=total_pages,
+            category=category  # 현재 카테고리를 전달
+        )
 @senior.route('/recommend', methods=['GET', 'POST'])
 def recommend():
     test_image_path = os.path.join('uploads', 'test_image.jpg')
@@ -492,5 +620,6 @@ def get_language():
 # Blueprint 등록
 app.register_blueprint(senior)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    # threading.Thread(target=gaze_tracking, daemon=True).start()
+    socketio.run(app, host='0.0.0.0', port=5000)
