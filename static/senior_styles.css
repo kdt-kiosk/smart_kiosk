@@ -176,7 +176,7 @@
 
 .senior_menu-item .senior_item-image {
     width: 100%;
-    max-width: 200px;
+    max-width: 150px;
     height: auto;
     border-radius: 8px;
     margin-bottom: 10px;
@@ -193,6 +193,8 @@
 }
 
 .senior_page-btn {
+    width: 300px;
+    height: 150px;
     padding: 30px 80px;
     font-size: 24px;
     cursor: pointer;
@@ -343,6 +345,7 @@
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
+    height: 130px; 
 }
 
 .senior_payment-btn {

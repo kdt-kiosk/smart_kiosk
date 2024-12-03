@@ -55,7 +55,7 @@
             <div class="senior_menu-grid">
                 {% for item in menu %}
                 <!-- 시선 추적을 위해 data-id 추가 -->
-                <div class="senior_menu-item" data-id="{{ item.id }}">
+                <div class="senior_menu-item" data-id="{{ item.id }}" onclick="addToCart('{{ item.id }}')">
                     <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}"
                         class="senior_item-image">
                     <h2 data-name="{{ item.name }}">{{ item.name }}</h2>
@@ -113,10 +113,16 @@
     <script>
         const socket = io();
         const gazePointer = document.getElementById('gaze-pointer');
-        const items = document.querySelectorAll('.senior_menu-item');
-        const tolerance = 10; // 허용 떨림 범위
-        let startTime = null;
-        let inTargetTime = 0;
+
+        // 모든 클릭 가능한 요소 선택
+        const buttons = document.querySelectorAll(
+            '.senior_menu-item, .senior_page-btn, .senior_payment-btn, .senior_cancel-btn, #paymentModal button'
+        );
+
+        const tolerance = 20; // 허용 범위
+        let hoverStartTime = null;
+        let hoverTarget = null;
+        let lastClickTime = 0; // 마지막 클릭 시간 기록
 
         // 시선 데이터 수신
         socket.on('gaze_data', (data) => {
@@ -127,31 +133,42 @@
             gazePointer.style.left = `${gazeX}px`;
             gazePointer.style.top = `${gazeY}px`;
 
-            // 메뉴 아이템 위에서 머무르는지 확인
-            items.forEach((item) => {
-                const rect = item.getBoundingClientRect();
-                const isInItem =
+            // 버튼 위에서 머무르는지 확인
+            let isHovering = false;
+
+            buttons.forEach((button) => {
+                const rect = button.getBoundingClientRect();
+                const isInButton =
                     gazeX >= rect.left - tolerance &&
                     gazeX <= rect.right + tolerance &&
                     gazeY >= rect.top - tolerance &&
                     gazeY <= rect.bottom + tolerance;
 
-                if (isInItem) {
-                    if (!startTime) startTime = Date.now();
-                    else inTargetTime += Date.now() - startTime;
+                if (isInButton) {
+                    isHovering = true;
 
-                    // 2초 이상 머무르면 항목 추가
-                    if (inTargetTime >= 2000) {
-                        const itemId = item.getAttribute('data-id');
-                        addToCart(itemId);
-                        inTargetTime = 0; // 초기화
-                        startTime = null; // 초기화
+                    // 버튼 위에 처음 도달했을 때 시간 기록
+                    if (hoverTarget !== button) {
+                        hoverStartTime = Date.now();
+                        hoverTarget = button;
+                    } else {
+                        // 버튼 위에서 일정 시간(2초) 머물렀으면 클릭 이벤트 실행
+                        const hoverDuration = Date.now() - hoverStartTime;
+                        if (hoverDuration >= 2000 && Date.now() - lastClickTime > 3000) {
+                            button.click(); // 클릭 이벤트 실행
+                            lastClickTime = Date.now(); // 마지막 클릭 시간 기록
+                            hoverStartTime = null; // 초기화
+                            hoverTarget = null; // 초기화
+                        }
                     }
-                } else {
-                    startTime = null;
-                    inTargetTime = 0;
                 }
             });
+
+            // 버튼 위를 벗어나면 초기화
+            if (!isHovering) {
+                hoverStartTime = null;
+                hoverTarget = null;
+            }
         });
 
         function addToCart(itemId) {

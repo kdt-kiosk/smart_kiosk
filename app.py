@@ -55,7 +55,7 @@ ITEMS_PER_PAGE = 12
 SENIOR_ITEMS_PER_PAGE = 4
 redirect_url = None  # 리디렉션 대상 URL
 gaze_switch = 0
-
+gaze_thread = None
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # 저장 폴더가 없으면 생성
 
@@ -493,7 +493,7 @@ def checkout():
 # 시니어홈 페이지 라우트
 @senior.route('/')
 def home():
-    global gaze_switch
+    global gaze_switch, gaze_thread
     # 선택된 카테고리와 페이지 번호를 가져옵니다.
     category = request.args.get('category')
     page = int(request.args.get('page', 1))  # 기본 페이지 번호는 1
