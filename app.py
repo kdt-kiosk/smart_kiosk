@@ -61,7 +61,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # 저장 폴더가 없으면 생성
 
 # yolov8 모델 로드
 face_model = YOLO("models/yolov11n-face.pt")  # yolov8 face 모델 경로 지정
-
+cap = cv2.VideoCapture(0)  # 웹캠 시작
+cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # 자동 초점 비활성화
+cap.set(cv2.CAP_PROP_FOCUS, 543) # 초점 설정
 
 user32 = ctypes.windll.user32
 SCREEN_WIDTH = user32.GetSystemMetrics(0)
@@ -72,6 +74,7 @@ gaze_point_history = deque(maxlen=8)
 # 얼굴 인식 변수
 face_detected = False
 face_detected_time = 0
+cap=None
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
@@ -106,16 +109,14 @@ def detect_gazes(frame: np.ndarray):
     return gazes
         
 def generate_frames():
-    global face_detected, face_detected_time, redirect_url, gaze_switch
+    global face_detected, face_detected_time, redirect_url, gaze_switch, cap
     redirect_url = None
 
     left_start_time = None
     right_start_time = None
     threshold_time = 3  # 시선이 유지되어야 할 시간 (초)
 
-    cap = cv2.VideoCapture(0)  # 웹캠 시작
-    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # 자동 초점 비활성화
-    cap.set(cv2.CAP_PROP_FOCUS, 543) # 초점 설정
+    
     while True:
         success, frame = cap.read()
         if not success:
@@ -144,7 +145,7 @@ def generate_frames():
                 if cropped_face is not None:
                     save_path = os.path.join(UPLOAD_FOLDER, 'test_image.jpg')
                     cv2.imwrite(save_path, cropped_face)
-
+                    age = predict_age(save_path)
                     
 
                 
@@ -173,37 +174,31 @@ def generate_frames():
                     left_start_time = time.time()
                 right_start_time = None
                 if time.time() - left_start_time >= threshold_time:
-                    # 나이 분류 수행
-                    age = predict_age(save_path)
+                    
+                    
                     gaze_switch = 0
                     if age == '40세 이상': # 시니어UI
                         print(age)
                         redirect_url = '/senior/'  # 40세이상이면 /senior 리디렉션
-                        cap.release()  # 카메라 자원 해제
                         break
                     else: # 일반UI
                         print(age)
                         redirect_url = '/home' # 40세이상이 아니면 /home 리디렉션
-                        cap.release()  # 카메라 자원 해제
                         break
                     
             elif gaze_point[0] > image_width / 2: # 오른쪽에서 3초 이상 머문다면
                 if right_start_time is None:
                     right_start_time = time.time()
                 left_start_time = None
-                if time.time() - right_start_time >= threshold_time:
-                    # 나이 분류 수행
-                    age = predict_age(save_path)
+                if time.time() - right_start_time >= threshold_time: 
                     gaze_switch = 1
                     if age == '40세 이상': # 시니어UI + 시선추정
                         print(age, " 시선 클릭")
                         redirect_url = '/senior/'  # 40세이상이면 /senior 리디렉션
-                        cap.release()  # 카메라 자원 해제
                         break
                     else: # 일반UI + 시선추정
                         print(age," 시선 클릭")
                         redirect_url = '/senior/' # 40세이상이 아니면 /home 리디렉션
-                        cap.release()  # 카메라 자원 해제
                         break
 
             else:
@@ -219,11 +214,10 @@ def generate_frames():
 
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
+    cap.release()
 
 def gaze_tracking():
-    global gaze_switch
-    print("카메라 오픈!!!!")
+    global gaze_switch, cap
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # 자동 초점 비활성화
     cap.set(cv2.CAP_PROP_FOCUS, 543) # 초점 설정
@@ -302,7 +296,14 @@ def gaze_tracking():
 # 첫 화면(카메라 화면) 라우트
 @app.route('/')
 def index():
-    global redirect_url
+    global redirect_url, cap
+    if cap is None:  # 웹캡처 객체가 없다면
+        cap = cv2.VideoCapture(0)  # 카메라 다시 열기
+
+    # 카메라가 열렸는지 확인
+    if not cap.isOpened():
+        print("Error: Couldn't open the camera.")
+        return "Error: Couldn't open the camera."
     redirect_url = None  # 초기화
     return render_template('index.html')
 
