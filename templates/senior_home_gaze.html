@@ -9,9 +9,9 @@
         /* 시선 포인터 스타일 */
         #gaze-pointer {
             position: absolute;
-            width: 25px;
-            height: 25px;
-            background-color: red;
+            width: 50px;
+            height: 50px;
+            background-color: rgb(0, 255, 98);
             border-radius: 50%;
             pointer-events: none;
             z-index: 9999;
@@ -113,77 +113,79 @@
     <script>
         const socket = io();
         const gazePointer = document.getElementById('gaze-pointer');
+    
+        // 클릭 가능한 모든 버튼 및 앵커 태그, 입력 요소 선택
+        function getAllClickableElements() {
+            return document.querySelectorAll('button, a, input, .clickable, .senior_menu-item, .senior_page-btn, .senior_payment-btn, .senior_cancel-btn'); // .senior_menu-item 추가
+        }
 
-        // 모든 클릭 가능한 요소 선택
-        const buttons = document.querySelectorAll(
-            '.senior_menu-item, .senior_page-btn, .senior_payment-btn, .senior_cancel-btn, #paymentModal button'
-        );
+        let buttons = getAllClickableElements(); // 처음에 클릭 가능한 요소를 수집
 
-        const tolerance = 100; // 허용 범위
-        let hoverStartTime = null;
-        let hoverTarget = null;
+        function updateButtonList() {
+            buttons = getAllClickableElements(); // 버튼 리스트 갱신
+        }
+    
+        // 모달이 열릴 때 버튼 리스트 갱신
+        const paymentModal = document.getElementById("paymentModal");
+        paymentModal.addEventListener("transitionend", updateButtonList);
+    
+        const tolerance = 10; // 허용 범위 (픽셀)
+        let hoverStartTime = null; // 시선이 버튼 위에 도달한 시간
+        let hoverTarget = null; // 현재 시선이 머무는 버튼
         let lastClickTime = 0; // 마지막 클릭 시간 기록
-
+        let eyeStaySec = 1;
+    
         // 시선 데이터 수신
         socket.on('gaze_data', (data) => {
-            const gazeX = data.x;
-            const gazeY = data.y;
-
+            const gazeX = data.x; // 시선의 X 좌표
+            const gazeY = data.y; // 시선의 Y 좌표
+    
             // 시선 포인터 이동
             gazePointer.style.left = `${gazeX}px`;
             gazePointer.style.top = `${gazeY}px`;
-
-            // 버튼 위에서 머무르는지 확인
-            let isHovering = false;
-
+    
+            let isHovering = false; // 시선이 버튼 위에 있는지 여부
+    
+            // 모든 버튼 확인
             buttons.forEach((button) => {
-                const rect = button.getBoundingClientRect();
+                const rect = button.getBoundingClientRect(); // 버튼 위치와 크기
                 const isInButton =
                     gazeX >= rect.left - tolerance &&
                     gazeX <= rect.right + tolerance &&
                     gazeY >= rect.top - tolerance &&
                     gazeY <= rect.bottom + tolerance;
-
+    
                 if (isInButton) {
                     isHovering = true;
-
-                    // 버튼 위에 처음 도달했을 때 시간 기록
+                    
+                    // 로그 출력: 버튼 위에 시선이 올라왔을 때
+                    // console.log(`Hovering over button: ${button.innerText}`);
+    
+                    // 새로운 버튼에 도달했을 때 시간 기록
                     if (hoverTarget !== button) {
-                        hoverStartTime = Date.now();
-                        hoverTarget = button;
+                        hoverStartTime = Date.now(); // 현재 시간을 기록
+                        hoverTarget = button; // 현재 버튼으로 설정
                     } else {
-                        // 버튼 위에서 일정 시간(2초) 머물렀으면 클릭 이벤트 실행
+                        // 동일한 버튼 위에서 머무는 시간 계산
                         const hoverDuration = Date.now() - hoverStartTime;
-                        if (hoverDuration >= 2000 && Date.now() - lastClickTime > 3000) {
-                            button.click(); // 클릭 이벤트 실행
-                            lastClickTime = Date.now(); // 마지막 클릭 시간 기록
+                        if (hoverDuration >= eyeStaySec * 1000 && Date.now() - lastClickTime > 3000) {
+                            button.click(); // 버튼 클릭 이벤트 실행
+                            lastClickTime = Date.now(); // 마지막 클릭 시간 갱신
                             hoverStartTime = null; // 초기화
                             hoverTarget = null; // 초기화
                         }
                     }
                 }
             });
-
+    
             // 버튼 위를 벗어나면 초기화
             if (!isHovering) {
                 hoverStartTime = null;
                 hoverTarget = null;
             }
         });
-
-        function addToCart(itemId) {
-            fetch(`/senior/add_to_cart/${itemId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.success) {
-                        document.getElementById("cart").innerHTML = data.cart_html;
-                    }
-                });
-        }
     </script>
+    
 </body>
 
 </html>
