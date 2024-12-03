@@ -134,3 +134,9 @@ https://github.com/kdt-kiosk/kiosk_gaze
 
 분류모델로 이용해서 추천메뉴를 사용자의 상태에 맞게 설정가능 
 
+
+
+https://github.com/user-attachments/assets/54ce00b6-655c-4a77-b058-c0359bc9db30
+
+
+
