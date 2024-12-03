@@ -119,3 +119,17 @@ https://huggingface.co/kdtFinalProject 참조
 
 # 시선추정 관련 저장소
 https://github.com/kdt-kiosk/kiosk_gaze
+
+
+
+---
+![image]()
+
+
+# 시연 동영상
+
+** 40세 이상인 아닌 사람이 일반 UI로 이용하는 모습
+[![Video Label](http://img.youtube.com/vi/BxoxqRGshCE/0.jpg)](https://youtu.be/BxoxqRGshCE)
+
+분류모델로 이용해서 추천메뉴를 사용자의 상태에 맞게 설정가능 
+
