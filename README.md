@@ -129,15 +129,13 @@ https://github.com/kdt-kiosk/kiosk_gaze
 # 시연 동영상
 
 ** 40세 이상인 아닌 사람이 일반 UI로 이용하는 모습
-[![Video Label](http://img.youtube.com/vi/BxoxqRGshCE/0.jpg)](https://youtu.be/BxoxqRGshCE)
-![Cafe Kiosk - Chrome 2024-12-03 17-28-00 (online-video-cutter com)](https://github.com/user-attachments/assets/5cfd2beb-ce4b-4031-85c2-5c77c3ff9027)
-
 분류모델로 이용해서 추천메뉴를 사용자의 상태에 맞게 설정가능 
 
 
 
-https://github.com/user-attachments/assets/f4172814-cdc7-4af5-85de-da0e1a692c96
+https://github.com/user-attachments/assets/f4172814-cdc7-4af5-85de-da0e1a692c96  
 
+** 40세 이상인  사람이  전용UI로 시선추적으로 이용하는 모습
 
 
 https://github.com/user-attachments/assets/54ce00b6-655c-4a77-b058-c0359bc9db30
