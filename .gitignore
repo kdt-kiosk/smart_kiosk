@@ -1,1 +1,5 @@
 /models/
+/__pycache__/
+/.env
+/networks/__pycache__/
+/uploads/test_image.jpg
