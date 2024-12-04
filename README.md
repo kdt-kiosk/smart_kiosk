@@ -129,6 +129,7 @@ https://huggingface.co/kdtFinalProject 참조
 
 <details>
   <summary><h1> 인종분류</h1></summary>
+  
   # VGG16 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
    ## Summary of Results
 
