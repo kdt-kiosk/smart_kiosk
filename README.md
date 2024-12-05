@@ -306,16 +306,72 @@ https://huggingface.co/kdtFinalProject 참조
 감정분류 [DDAMNet](https://github.com/SainingZhang/DDAMFN) 
 
 <details>
-  <summary><h3>인종분류 MobilenetV4</h3></summary>
+  <summary><h3>2.인종분류 MobilenetV4</h3></summary>
   
-  [MobilenetV4 info](https://huggingface.co/blog/rwightman/mobilenetv4)   
-  [MobileNetV4 Github](https://github.com/tensorflow/models/blob/master/official/vision/modeling/backbones/mobilenet.py)  
-- UIB(Universal Inverted Bottleneck): 이 유연한 구조는 IB(Inverted Bottleneck), ConvNext, FFN(Feed Forward Network) 및 새로운 ExtraDW(ExtraDW) 변형을 포함한 다양한 아키텍처 요소를 통합합니다. 이러한 요소는 집합적으로 모델의 성능과 적응성을 향상시킵니다.
-  
-  ![image](https://github.com/user-attachments/assets/ae8d7751-c57b-491e-b2a0-90ebf3736e56)
+[MobileNetV4 논문](https://arxiv.org/abs/2404.10518) | [MobileNetV4 GitHub](https://github.com/tensorflow/models/blob/master/official/vision/modeling/backbones/mobilenet.py)
 
-- 모바일 MQA: 모바일 액셀러레이터용으로 설계된 특수 어텐션 블록인 Mobile MQA는 기존 어텐션 메커니즘에 비해 39% 상당한 속도 향상을 달성하여 모바일 하드웨어의 추론 효율성을 높입니다.
-- 최적화된 신경 아키텍처 검색(NAS): 이 향상된 NAS 방법론은 아키텍처 검색 효율성을 향상시켜 CPU, DSP, GPU 및 Apple Neural Engine 및 Google Pixel EdgeTPU와 같은 특수 가속기를 포함한 다양한 모바일 플랫폼에서 대부분 Pareto 최적인 모델을 만듭니다.
+#### **구조 및 원리**
+**MobileNetV4**는 경량화된 효율적인 딥러닝 모델로, 인종 분류와 같은 작업을 위해 설계되었습니다.
+**Universal Inverted Bottleneck** (UIB)와 **Depthwise Separable Convolution**과 같은 혁신적인 기술을 결합하여 높은 정확도를 유지하면서도 계산 비용을 최소화하였으며, 모바일 디바이스나 키오스크와 같은 실시간 애플리케이션에 적합합니다.
+
+---
+
+#### **모델 구조**
+
+1. **입력 (얼굴 이미지)**  
+   - **입력 데이터:** 얼굴 이미지를 입력으로 처리하며, 얼굴 탐지 및 크기 조정을 통해 (224 × 224) 크기로 정규화합니다.  
+   - **목표:** 입력 얼굴의 특징을 기반으로 인종 카테고리를 예측합니다.
+
+2. **백본 네트워크 (MobileNetV4 Architecture)**  
+   - **역할:** 입력 이미지를 처리하여 고차원 특징을 추출합니다.  
+   - **구조:**  
+     - **Universal Inverted Bottleneck (UIB):**  
+       - Inverted Bottleneck, ConvNext, Feed Forward Network (FFN), ExtraDW와 같은 다양한 요소를 통합하여 특징 추출을 최적화합니다.  
+       - 이러한 구조는 모델의 성능과 적응성을 크게 향상시킵니다.
+     - **Mobile MQA (Mobile Multi-Head Attention):**  
+       - 모바일 가속기에 최적화된 특별한 주의 메커니즘으로, 기존 주의 메커니즘 대비 39%의 속도 향상을 제공합니다.  
+       - 이를 통해 모바일 하드웨어에서 추론 효율성을 극대화합니다.  
+     - **Optimized Neural Architecture Search (NAS):**  
+       - 최적화된 NAS 기법을 통해 다양한 모바일 플랫폼(CPU, DSP, GPU, Apple Neural Engine, Google Pixel EdgeTPU)에서 최적의 아키텍처를 생성합니다.
+     - **Depthwise Separable Convolution:**  
+       - 공간 및 채널 필터링을 분리하여 계산 효율성을 극대화합니다.  
+   - **백본 출력:** 압축된 특징 맵을 생성하여 Fully Connected Layers로 전달합니다.
+
+3. **Fully Connected Layers (FC Layers)**  
+   - **특징:** 백본에서 추출된 특징 맵이 Fully Connected Layers로 전달됩니다.  
+   - **출력:** FC Layers는 인종 카테고리의 클래스 확률을 예측합니다.
+
+4. **예측 헤드 (Softmax Output)**  
+   - **Softmax 분류:**  
+     - 인종 카테고리(예: Asian, Non-Asian)에 대한 확률 분포를 생성합니다.  
+     - 가장 높은 확률을 가진 카테고리를 최종 예측 값으로 지정합니다.
+
+5. **제안된 손실 함수**  
+   MobileNetV4는 **Cross Entropy Loss**를 사용하여 분류 오류를 최소화합니다:  
+   - **Cross Entropy Loss:** 예측된 클래스 확률과 실제 레이블 간의 차이를 줄입니다.  
+   - **Regularization (L2 Loss):** 네트워크의 큰 가중치를 규제하여 과적합을 방지합니다.  
+   - **총 손실:**  $$\text{Total Loss} = \text{Cross Entropy Loss} + \text{L2 Regularization Loss}$$
+
+---
+
+#### **동작 원리 요약**
+1. **입력 처리:** 입력된 얼굴 이미지를 네트워크에 맞게 크기 조정 및 정규화합니다.  
+2. **특징 추출:** MobileNetV4의 경량화된 아키텍처를 통해 고차원 특징을 추출합니다.  
+3. **예측 헤드:** Softmax를 사용하여 인종 카테고리를 분류합니다.  
+4. **손실 함수 최적화:** Cross Entropy Loss와 정규화를 결합하여 정확도를 높이고 과적합을 방지합니다.
+
+---
+
+#### **모델 특징**
+- **효율성:**  
+  - Depthwise Convolution과 UIB를 활용한 경량 설계로 모바일 플랫폼에 적합합니다.  
+  - Mobile MQA를 통해 기존 주의 메커니즘 대비 39% 빠른 추론 속도를 제공합니다.  
+- **정확도:** 높은 분류 성능을 유지하면서도 계산량을 최소화합니다.  
+- **실시간 애플리케이션:** 키오스크, 주의 모니터링, 인구 통계 연구와 같은 애플리케이션에 이상적입니다.  
+- **최적화된 아키텍처:** NAS를 통해 다양한 플랫폼에서 최적의 성능을 보장합니다.  
+
+
+
 </details>
 
 
