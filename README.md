@@ -285,15 +285,35 @@ https://cdn.discordapp.com/attachments/1229239889799807042/1313442062179504200/i
 
 ~~ 선택된 최종모델
 ## 최종사용모델
-감정분류 [DDAMNet](https://github.com/SainingZhang/DDAMFN)   
-인종분류 [mobilenetV4](https://huggingface.co/blog/rwightman/mobilenetv4)  
+감정분류 [DDAMNet](https://github.com/SainingZhang/DDAMFN) 
+
+<details>
+  <summary><h3>인종분류 MobilenetV4</h3></summary>
+  
+  [MobilenetV4 info](https://huggingface.co/blog/rwightman/mobilenetv4)   
+  [MobileNetV4 Github](https://github.com/tensorflow/models/blob/master/official/vision/modeling/backbones/mobilenet.py)  
 - UIB(Universal Inverted Bottleneck): 이 유연한 구조는 IB(Inverted Bottleneck), ConvNext, FFN(Feed Forward Network) 및 새로운 ExtraDW(ExtraDW) 변형을 포함한 다양한 아키텍처 요소를 통합합니다. 이러한 요소는 집합적으로 모델의 성능과 적응성을 향상시킵니다.
+  
+  ![image](https://github.com/user-attachments/assets/ae8d7751-c57b-491e-b2a0-90ebf3736e56)
+
 - 모바일 MQA: 모바일 액셀러레이터용으로 설계된 특수 어텐션 블록인 Mobile MQA는 기존 어텐션 메커니즘에 비해 39% 상당한 속도 향상을 달성하여 모바일 하드웨어의 추론 효율성을 높입니다.
 - 최적화된 신경 아키텍처 검색(NAS): 이 향상된 NAS 방법론은 아키텍처 검색 효율성을 향상시켜 CPU, DSP, GPU 및 Apple Neural Engine 및 Google Pixel EdgeTPU와 같은 특수 가속기를 포함한 다양한 모바일 플랫폼에서 대부분 Pareto 최적인 모델을 만듭니다.
+</details>
 
 
+
+
+<details>
+  <summary><h3> 성별분류,연령분류 ResNet18</h3></summary>
   
-성별분류,연령분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
+ [ResNet18 docs](https://huggingface.co/docs/transformers/model_doc/resnet)    
+ [ResNet18 github](https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py)
+
+
+![image](https://github.com/user-attachments/assets/7f4bd0e9-0b78-401f-9d41-cf6978933edd)
+
+  ResNet18은 18개의 층으로 이루어진 ResNet을 의미하는데 244*244*3의 image를 input으로 받는다. 그리고 4개의 Conv block과 Adaptive Average Pooling을 시행한 후 Fully Connected layer(FC layer)를 통과시켜 이미지를 분류한다. 각각의 Conv block은 두 개의 3*3 Conv 레이어로 구성되어 있다.
+  
 - **연결 건너뛰기(잔여 연결)**:
   ResNet18은 하나 이상의 레이어를 우회하는 잔여 연결을 도입하여 기울기가 이전 레이어로 직접 흐를 수 있도록 합니다. 이는 Vanishing Gradient 문제를 효과적으로 해결하고 더 깊은 네트워크의 훈련을 지원합니다.
 - **아키텍처 개요:**
@@ -307,6 +327,8 @@ https://cdn.discordapp.com/attachments/1229239889799807042/1313442062179504200/i
 두 번째 컨볼루션 레이어의 출력에 첫 번째 레이어의 입력을 직접 더함. 이는 잔차를 학습하도록 하며, 기울기 소실 문제를 완화시켜 더 깊은 네트워크를 효과적으로 훈련시킴.  
   5. **활성화 함수 (ReLU):**  
 잔차 연결 후에도 ReLU 활성화 함수를 적용하여 비선형성을 유지   
+</details>
+
 
 
 
