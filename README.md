@@ -274,84 +274,138 @@ https://cdn.discordapp.com/attachments/1229239889799807042/1313442062179504200/i
 
 ~~ 선택된 최종모델
 ## 최종사용모델
-### 1. 감정분류 - DDAMNet
-[DDAMNet GitHub](https://github.com/SainingZhang/DDAMFN)<br>
-[DDAMNet Paper](https://www.mdpi.com/2079-9292/12/17/3595)
-### 구조 및 원리
-![image](https://github.com/user-attachments/assets/b4ec1c20-1452-4018-a310-81e92cfd9a08)
-#### 개요
-DDAMFN(Dual-Direction Attention Mixed Feature Network)은 얼굴 표정 인식(Facial Expression Recognition, FER)을 위해 설계된 경량화되고 강력한 딥러닝 모델입니다. 이 네트워크는 입력 이미지로부터 특징을 추출하고, 중요한 부분에 집중하여 얼굴 표정을 정확하게 예측합니다. DDAMFN은 크게 두 가지 주요 구성 요소로 나뉩니다:
-1. **MFN (Mixed Feature Network):** 얼굴 이미지로부터 기본적인 특징을 추출.
-2. **DDAN (Dual-Direction Attention Network):** 추출된 특징을 분석하고, 얼굴에서 중요한 부분에 주의를 집중.
-
----
-
-#### 모델 구조
-
-##### 1. **Feature Extraction (특징 추출)**
-- 입력 이미지 크기: \(112 \times 112\)
-- **MFN (Mixed Feature Network):**
-  - 다양한 크기의 합성곱 커널(MixConv)을 사용하여 얼굴 이미지에서 세부적이고 전반적인 특징을 추출합니다.
-  - Residual Bottleneck 구조를 통해 정보 손실을 방지하고, 효율적인 학습이 가능하도록 설계되었습니다.
-  - Stride-1과 Stride-2 블록을 활용하여 세부 정보와 주요 특징을 모두 보존합니다.
-  - **Coordinate Attention**을 적용하여 얼굴 이미지의 중요한 위치(눈, 코, 입 등)를 강조합니다.
-  - 최종적으로 \(7 \times 7 \times 512\) 크기의 특징 맵을 생성합니다.
-
----
-
-##### 2. **Attention Module (주의 모듈)**
-- **Dual Direction Attention (DDA):**
-  - 두 가지 방향으로 주의를 분석:
-    - **수평 방향(X Linear GDConv):** 얼굴의 좌우 영역을 분석.
-    - **수직 방향(Y Linear GDConv):** 얼굴의 위아래 영역을 분석.
-  - 두 방향의 결과를 결합(Concatenate & Conv2D)하여 종합적인 주의 맵을 생성합니다.
-- **주의 맵 생성:** 중요한 부분을 강조하고, 덜 중요한 영역의 영향을 줄입니다.
-- **MAX 연산:** 여러 주의 맵 중에서 가장 유용한 맵을 선택합니다.
-- **곱셈 연산:** 주의 맵과 기존 특징 맵을 결합하여, 모델이 얼굴의 중요한 영역에 집중할 수 있도록 합니다.
-
----
-
-##### 3. **Feature Transformation (특징 변환)**
-- **Global Depthwise Convolution (GDConv):**
-  - 주의 맵이 결합된 특징 맵을 압축하여 \(1 \times 1 \times 512\) 크기로 변환합니다.
-- **Reshape:** 특징 맵을 256차원의 벡터로 변환하여 최종 예측에 사용합니다.
-
----
-
-##### 4. **Fully Connected Layer (완전 연결 계층)**
-- 변환된 256차원 벡터는 완전 연결 계층(FC Layer)을 통과하여, 입력 얼굴 이미지의 감정을 예측합니다.
-- **손실 함수(Loss Function):**
-  - **Cross-Entropy Loss (\(L_{cls}\)):** 모델의 감정 예측 성능을 최적화합니다.
-  - **Attention Loss (\(L_{att}\)):** 주의 모듈이 서로 다른 얼굴 영역에 집중하도록 유도합니다.
-
----
-
-#### 동작 원리 요약
-1. **MFN (특징 추출):** 얼굴 이미지로부터 다양한 크기의 커널을 활용해 세부적이고 전반적인 특징을 추출.
-2. **DDAN (주의 모듈):** 두 방향(수평, 수직)으로 얼굴의 중요한 영역을 분석하고, 주의 맵을 생성.
-3. **Feature Transformation:** 추출된 특징을 압축하고 변환하여 예측 가능한 벡터로 변환.
-4. **FC Layer:** 최종 예측을 통해 얼굴 감정을 분류.
-
----
-
-#### 모델의 강점
-1. **경량화:** 계산량을 줄이면서도 높은 정확도를 유지.
-2. **효율적인 특징 추출:** 다양한 크기의 커널과 Residual Bottleneck 구조를 활용.
-3. **주의 메커니즘:** 얼굴의 중요한 부분에 집중하여 예측 성능 향상.
-4. **적용 가능성:** 다양한 감정 인식 및 얼굴 기반 응용 프로그램에 활용 가능.
+<details>
+  <summary><h3>1. 감정분류 - DDAMNet</h3></summary>
+  
+  [DDAMNet GitHub](https://github.com/SainingZhang/DDAMFN)<br>
+  [DDAMNet Paper](https://www.mdpi.com/2079-9292/12/17/3595)
+  #### 구조 및 원리
+  ![image](https://github.com/user-attachments/assets/b4ec1c20-1452-4018-a310-81e92cfd9a08)
+  ##### 개요
+  DDAMFN(Dual-Direction Attention Mixed Feature Network)은 얼굴 표정 인식(Facial Expression Recognition, FER)을 위해 설계된 경량화되고 강력한 딥러닝 모델입니다. 이 네트워크는 입력 이미지로부터 특징을 추출하고, 중요한 부분에 집중하여 얼굴 표정을 정확하게 예측합니다. DDAMFN은 크게 두 가지 주요 구성 요소로 나뉩니다:
+  1. **MFN (Mixed Feature Network):** 얼굴 이미지로부터 기본적인 특징을 추출.
+  2. **DDAN (Dual-Direction Attention Network):** 추출된 특징을 분석하고, 얼굴에서 중요한 부분에 주의를 집중.
+  
+  ##### 모델 구조
+  
+  ###### 1. **Feature Extraction (특징 추출)**
+  - 입력 이미지 크기: \(112 \times 112\)
+  - **MFN (Mixed Feature Network):**
+    - 다양한 크기의 합성곱 커널(MixConv)을 사용하여 얼굴 이미지에서 세부적이고 전반적인 특징을 추출합니다.
+    - Residual Bottleneck 구조를 통해 정보 손실을 방지하고, 효율적인 학습이 가능하도록 설계되었습니다.
+    - Stride-1과 Stride-2 블록을 활용하여 세부 정보와 주요 특징을 모두 보존합니다.
+    - **Coordinate Attention**을 적용하여 얼굴 이미지의 중요한 위치(눈, 코, 입 등)를 강조합니다.
+    - 최종적으로 \(7 \times 7 \times 512\) 크기의 특징 맵을 생성합니다.
+  
+  ###### 2. **Attention Module (주의 모듈)**
+  - **Dual Direction Attention (DDA):**
+    - 두 가지 방향으로 주의를 분석:
+      - **수평 방향(X Linear GDConv):** 얼굴의 좌우 영역을 분석.
+      - **수직 방향(Y Linear GDConv):** 얼굴의 위아래 영역을 분석.
+    - 두 방향의 결과를 결합(Concatenate & Conv2D)하여 종합적인 주의 맵을 생성합니다.
+  - **주의 맵 생성:** 중요한 부분을 강조하고, 덜 중요한 영역의 영향을 줄입니다.
+  - **MAX 연산:** 여러 주의 맵 중에서 가장 유용한 맵을 선택합니다.
+  - **곱셈 연산:** 주의 맵과 기존 특징 맵을 결합하여, 모델이 얼굴의 중요한 영역에 집중할 수 있도록 합니다.
+  
+  ###### 3. **Feature Transformation (특징 변환)**
+  - **Global Depthwise Convolution (GDConv):**
+    - 주의 맵이 결합된 특징 맵을 압축하여 \(1 \times 1 \times 512\) 크기로 변환합니다.
+  - **Reshape:** 특징 맵을 256차원의 벡터로 변환하여 최종 예측에 사용합니다.
+  
+  ###### 4. **Fully Connected Layer (완전 연결 계층)**
+  - 변환된 256차원 벡터는 완전 연결 계층(FC Layer)을 통과하여, 입력 얼굴 이미지의 감정을 예측합니다.
+  - **손실 함수(Loss Function):**
+    - **Cross-Entropy Loss (\(L_{cls}\)):** 모델의 감정 예측 성능을 최적화합니다.
+    - **Attention Loss (\(L_{att}\)):** 주의 모듈이 서로 다른 얼굴 영역에 집중하도록 유도합니다.
+  
+  ##### 동작 원리 요약
+  1. **MFN (특징 추출):** 얼굴 이미지로부터 다양한 크기의 커널을 활용해 세부적이고 전반적인 특징을 추출.
+  2. **DDAN (주의 모듈):** 두 방향(수평, 수직)으로 얼굴의 중요한 영역을 분석하고, 주의 맵을 생성.
+  3. **Feature Transformation:** 추출된 특징을 압축하고 변환하여 예측 가능한 벡터로 변환.
+  4. **FC Layer:** 최종 예측을 통해 얼굴 감정을 분류.
+  
+  ##### 모델의 강점
+  1. **경량화:** 계산량을 줄이면서도 높은 정확도를 유지.
+  2. **효율적인 특징 추출:** 다양한 크기의 커널과 Residual Bottleneck 구조를 활용.
+  3. **주의 메커니즘:** 얼굴의 중요한 부분에 집중하여 예측 성능 향상.
+  4. **적용 가능성:** 다양한 감정 인식 및 얼굴 기반 응용 프로그램에 활용 가능.
+</details>
 
 
+### 2. 인종분류 [mobilenetV4](https://huggingface.co/blog/rwightman/mobilenetv4)  
+### 3. 성별분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
+### 4. 연령분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
 
-
-인종분류 [mobilenetV4](https://huggingface.co/blog/rwightman/mobilenetv4)  
-성별분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
-연령분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
-
-얼굴인식 [yolov11n-face](https://github.com/akanametov/yolo-face)  
-시선추정 [roboflow](https://blog.roboflow.com/gaze-direction-position/)    
-
-
--- 각 최종모델에 대한 상세 설명 추가 (원리  ,구조 )
+### 5. 얼굴인식 [yolov11n-face](https://github.com/akanametov/yolo-face)  
+<details>
+  <summary><h3>6. 시선추정 - L2CS-Net</h3></summary>
+  [L2CS-Net Paper](https://arxiv.org/abs/2203.03339)<br>
+  [L2CS-Net GitHub](https://github.com/Ahmednull/L2CS-Net)<br>
+  [L2CS-Net roboflow](https://blog.roboflow.com/gaze-direction-position/)<br>
+  
+  #### 구조 및 원리
+  ![image](https://github.com/user-attachments/assets/b7573e01-bcce-4b90-b3ca-e7a149caf802)
+  
+  ##### 개요
+  L2CS-Net은 **시선 추정(Gaze Estimation)**을 위한 딥러닝 기반 네트워크로, 입력 얼굴 이미지를 이용하여 사람의 수평(Yaw) 및 수직(Pitch) 방향의 시선을 정확히 예측하는 모델입니다. 이 모델은 **분류(Classification)**와 **회귀(Regression)** 기법을 결합하여 시선 추정 정확도와 효율성을 극대화합니다.
+  
+  ##### 모델 구조
+  
+  ###### 1. **입력 (Face Images)**
+  - **입력 데이터:**
+    - 얼굴 이미지를 네트워크에 입력으로 사용하며, 얼굴 탐지 및 정규화를 통해 전처리된 이미지입니다.
+  - **목표:**
+    - 입력 얼굴에서 수평(Yaw) 및 수직(Pitch) 방향 시선을 추정합니다.
+  
+  ###### 2. **백본 네트워크 (ResNet-50 Backbone)**
+  - **역할:**
+    - ResNet-50은 입력 이미지에서 중요한 고차원 특징을 추출합니다.
+  - **구조:**
+    - ResNet-50은 합성곱(CNN) 레이어로 구성되어 있으며, 입력 이미지의 공간적 패턴을 학습합니다.
+  - **출력:**
+    - ResNet-50은 추출된 특징을 Fully Connected Layers로 전달합니다.
+  
+  ###### 3. **Fully Connected Layers (FC Layers)**
+  - ResNet-50에서 추출된 특징은 두 개의 Fully Connected Layer로 전달됩니다.
+  - 두 FC Layer는 각각 **Yaw(수평)**와 **Pitch(수직)** 방향의 시선을 예측합니다.
+  
+  ###### 4. **Yaw 및 Pitch 헤드 (Multi-Head Output)**
+  4.1 **Yaw 헤드**
+  - **Softmax 분류:** 수평 각도 클래스(예: -30°, -15°, 0°, 15°, 30° 등)에 대해 확률 분포를 계산합니다.
+  - **Expectation 계산:** Softmax 확률을 기반으로 각 클래스의 기대값을 계산하여 연속적인 각도를 예측합니다.
+  
+  4.2 **Pitch 헤드**
+  - **Softmax 분류:** 수직 각도 클래스(예: -30°, -15°, 0°, 15°, 30° 등)에 대해 확률 분포를 계산합니다.
+  - **Expectation 계산:** Softmax 확률을 기반으로 각 클래스의 기대값을 계산하여 연속적인 각도를 예측합니다.
+  
+  ###### 5. **손실 함수 (Proposed Loss Function)**
+  L2CS-Net은 **분류 손실**과 **회귀 손실**을 결합하여 학습합니다:
+  
+  5.1 **Yaw 손실**
+  - **크로스 엔트로피 손실 (Cross Entropy Loss):** 클래스 확률과 실제 각도 클래스 간 차이를 줄입니다.
+  - **평균 제곱 오차 (Mean Squared Error, MSE):** 계산된 기대값과 실제 연속값 간의 오차를 줄입니다.
+  - **총 손실:**
+    \[
+    \text{Total Yaw Error} = \text{Cross Entropy Loss} + \text{Mean Squared Error}
+    \]
+  
+  5.2 **Pitch 손실**
+  - Pitch 손실은 Yaw 손실과 동일한 방식으로 계산됩니다:
+    \[
+    \text{Total Pitch Error} = \text{Cross Entropy Loss} + \text{Mean Squared Error}
+    \]
+  
+  ##### 동작 원리 요약
+  1. **입력 처리:** 얼굴 이미지를 네트워크에 입력.
+  2. **특징 추출:** ResNet-50 백본을 통해 고차원 특징을 추출.
+  3. **Yaw 및 Pitch 헤드:** 각각 수평(Yaw) 및 수직(Pitch) 방향에 대해 Softmax와 기대값 계산으로 각도 예측.
+  4. **손실 함수 최적화:** 분류 손실과 회귀 손실을 결합하여 모델 학습.
+  
+  ##### 모델의 특징
+  - **효율성:** ResNet-50을 백본으로 사용하여 고차원 특징 추출.
+  - **정확성:** 분류와 회귀를 결합하여 연속적인 각도를 예측.
+  - **적용 가능성:** 다양한 시선 추정 응용 분야(예: AR/VR, 주의 모니터링, 졸음 감지)에 적합.
+</details>
 
 ---
 # 시선추적 관련 calibration 생성
