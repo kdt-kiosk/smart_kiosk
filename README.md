@@ -595,9 +595,69 @@ https://huggingface.co/kdtFinalProject 참조
 </details>
 
 
+<details>  
+  <summary><h3> 얼굴 인식 - YOLOv11n-Face</h3></summary>  
+  [YOLOv11n-Face GitHub](https://github.com/akanametov/yolo-face)<br>  
+
+#### **구조 및 원리**  
+![image](https://github.com/user-attachments/assets/example-placeholder-image)  
+
+##### **개요**  
+YOLOv11n-Face는 **얼굴 탐지(Face Detection)** 및 **인식(Recognition)**을 위해 설계된 딥러닝 모델입니다. YOLO(You Only Look Once) 아키텍처를 기반으로 하며, 객체 탐지 기술의 발전을 활용하여 실시간 애플리케이션에 적합한 효율적이고 정확한 얼굴 탐지 솔루션을 제공합니다.
+
+---
+
+##### **모델 구조**  
+
+###### 1. **입력 (Images or Video Frames)**  - **입력 데이터:**  
+  - 모델은 이미지 또는 비디오 프레임을 입력으로 사용하며, 입력 데이터는 탐지에 최적화되도록 크기 조정 및 정규화 과정을 거칩니다.  
+- **목표:**  
+  - 입력 데이터에서 얼굴을 탐지하고 경계 상자(Bounding Box)의 좌표를 제공합니다.  
+
+###### 2. **백본 네트워크 (YOLOv11n Architecture)**  - **역할:**  
+  - YOLOv11n은 입력 이미지에서 특징을 추출합니다.  
+- **구조:**  
+  - **Convolutional Layers:** 입력 프레임에서 얼굴의 공간적 및 계층적 특징을 캡처합니다.  
+  - **Neck Module:** 다양한 크기의 얼굴 탐지 정확도를 향상시키기 위해 특징 맵을 처리합니다.  
+- **출력:**  
+  - 다양한 크기의 얼굴을 탐지하기 위한 최적화된 특징 맵을 생성합니다.  
+
+###### 3. **Detection Head**  - **Bounding Box Prediction:**  
+  - 탐지된 얼굴에 대한 경계 상자 중심 좌표, 너비 및 높이를 예측합니다.  
+- **Confidence Score:**  
+  - 얼굴 존재 가능성을 나타내는 신뢰 점수를 할당합니다.  
+
+###### 4. **후처리 (Post-Processing)**  - **Non-Maximum Suppression (NMS):**  
+  - 중복된 경계 상자를 제거하고 가장 정확한 탐지를 유지합니다.  
+- **최종 출력:**  
+  - 탐지된 얼굴에 대한 경계 상자와 신뢰 점수 목록을 제공합니다.  
+
+###### 5. **손실 함수 (Proposed Loss Function)**  
+YOLOv11n-Face는 탐지 성능을 최적화하기 위해 다음 손실 함수를 사용합니다:  
+- **Localization Loss:** 예측된 경계 상자 좌표와 실제 좌표 간의 차이를 줄입니다.  
+- **Confidence Loss:** 정확한 신뢰 점수를 할당할 수 있도록 모델을 최적화합니다.  
+- **총 손실:**  
+  \[  
+  \text{Total Loss} = \text{Localization Loss} + \text{Confidence Loss}  
+  \]  
+
+---
+
+##### **동작 원리 요약**  1. **입력 처리:** 입력된 이미지 또는 비디오 프레임을 모델에 맞게 크기 조정 및 정규화합니다.  
+2. **특징 추출:** YOLOv11n 백본을 통해 입력 데이터에서 고차원 특징을 추출합니다.  
+3. **Detection Head:** 얼굴 탐지를 위해 경계 상자와 신뢰 점수를 예측합니다.  
+4. **후처리:** Non-Maximum Suppression(NMS)을 사용하여 탐지 결과를 정제합니다.  
+5. **손실 최적화:** Localization Loss와 Confidence Loss를 결합하여 탐지 정확도를 높입니다.  
+
+---
+
+##### **모델 특징**  - **효율성:** YOLOv11n은 실시간 얼굴 탐지 애플리케이션에 최적화되어 있습니다.  
+- **정확성:** 까다로운 환경에서도 얼굴 탐지의 정밀도와 재현율을 균형 있게 유지합니다.  
+- **적용 가능성:** 감시, 인증, 증강 현실(AR)과 같은 다양한 얼굴 탐지 애플리케이션에 적합합니다.  
+
+</details>
 
 
-얼굴인식 [yolov11n-face](https://github.com/akanametov/yolo-face)  
 <details>
   <summary><h3>6. 시선추정 - L2CS-Net</h3></summary>
   [L2CS-Net Paper](https://arxiv.org/abs/2203.03339)<br>
