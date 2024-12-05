@@ -365,7 +365,7 @@ https://huggingface.co/kdtFinalProject 참조
 
 
 <details>
-  <summary><h1> 연령분류</h1></summary>
+  <summary><h2> 연령분류</h2></summary>
   # ResNet18 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
 
   ## Summary of Results
