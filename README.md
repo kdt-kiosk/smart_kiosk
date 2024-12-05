@@ -274,7 +274,75 @@ https://cdn.discordapp.com/attachments/1229239889799807042/1313442062179504200/i
 
 ~~ 선택된 최종모델
 ## 최종사용모델
-감정분류 [DDAMNet](https://github.com/SainingZhang/DDAMFN)   
+### 1. 감정분류 - DDAMNet
+[DDAMNet GitHub](https://github.com/SainingZhang/DDAMFN)<br>
+[DDAMNet Paper](https://www.mdpi.com/2079-9292/12/17/3595)
+### 구조 및 원리
+![image](https://github.com/user-attachments/assets/b4ec1c20-1452-4018-a310-81e92cfd9a08)
+#### 개요
+DDAMFN(Dual-Direction Attention Mixed Feature Network)은 얼굴 표정 인식(Facial Expression Recognition, FER)을 위해 설계된 경량화되고 강력한 딥러닝 모델입니다. 이 네트워크는 입력 이미지로부터 특징을 추출하고, 중요한 부분에 집중하여 얼굴 표정을 정확하게 예측합니다. DDAMFN은 크게 두 가지 주요 구성 요소로 나뉩니다:
+1. **MFN (Mixed Feature Network):** 얼굴 이미지로부터 기본적인 특징을 추출.
+2. **DDAN (Dual-Direction Attention Network):** 추출된 특징을 분석하고, 얼굴에서 중요한 부분에 주의를 집중.
+
+---
+
+#### 모델 구조
+
+##### 1. **Feature Extraction (특징 추출)**
+- 입력 이미지 크기: \(112 \times 112\)
+- **MFN (Mixed Feature Network):**
+  - 다양한 크기의 합성곱 커널(MixConv)을 사용하여 얼굴 이미지에서 세부적이고 전반적인 특징을 추출합니다.
+  - Residual Bottleneck 구조를 통해 정보 손실을 방지하고, 효율적인 학습이 가능하도록 설계되었습니다.
+  - Stride-1과 Stride-2 블록을 활용하여 세부 정보와 주요 특징을 모두 보존합니다.
+  - **Coordinate Attention**을 적용하여 얼굴 이미지의 중요한 위치(눈, 코, 입 등)를 강조합니다.
+  - 최종적으로 \(7 \times 7 \times 512\) 크기의 특징 맵을 생성합니다.
+
+---
+
+##### 2. **Attention Module (주의 모듈)**
+- **Dual Direction Attention (DDA):**
+  - 두 가지 방향으로 주의를 분석:
+    - **수평 방향(X Linear GDConv):** 얼굴의 좌우 영역을 분석.
+    - **수직 방향(Y Linear GDConv):** 얼굴의 위아래 영역을 분석.
+  - 두 방향의 결과를 결합(Concatenate & Conv2D)하여 종합적인 주의 맵을 생성합니다.
+- **주의 맵 생성:** 중요한 부분을 강조하고, 덜 중요한 영역의 영향을 줄입니다.
+- **MAX 연산:** 여러 주의 맵 중에서 가장 유용한 맵을 선택합니다.
+- **곱셈 연산:** 주의 맵과 기존 특징 맵을 결합하여, 모델이 얼굴의 중요한 영역에 집중할 수 있도록 합니다.
+
+---
+
+##### 3. **Feature Transformation (특징 변환)**
+- **Global Depthwise Convolution (GDConv):**
+  - 주의 맵이 결합된 특징 맵을 압축하여 \(1 \times 1 \times 512\) 크기로 변환합니다.
+- **Reshape:** 특징 맵을 256차원의 벡터로 변환하여 최종 예측에 사용합니다.
+
+---
+
+##### 4. **Fully Connected Layer (완전 연결 계층)**
+- 변환된 256차원 벡터는 완전 연결 계층(FC Layer)을 통과하여, 입력 얼굴 이미지의 감정을 예측합니다.
+- **손실 함수(Loss Function):**
+  - **Cross-Entropy Loss (\(L_{cls}\)):** 모델의 감정 예측 성능을 최적화합니다.
+  - **Attention Loss (\(L_{att}\)):** 주의 모듈이 서로 다른 얼굴 영역에 집중하도록 유도합니다.
+
+---
+
+#### 동작 원리 요약
+1. **MFN (특징 추출):** 얼굴 이미지로부터 다양한 크기의 커널을 활용해 세부적이고 전반적인 특징을 추출.
+2. **DDAN (주의 모듈):** 두 방향(수평, 수직)으로 얼굴의 중요한 영역을 분석하고, 주의 맵을 생성.
+3. **Feature Transformation:** 추출된 특징을 압축하고 변환하여 예측 가능한 벡터로 변환.
+4. **FC Layer:** 최종 예측을 통해 얼굴 감정을 분류.
+
+---
+
+#### 모델의 강점
+1. **경량화:** 계산량을 줄이면서도 높은 정확도를 유지.
+2. **효율적인 특징 추출:** 다양한 크기의 커널과 Residual Bottleneck 구조를 활용.
+3. **주의 메커니즘:** 얼굴의 중요한 부분에 집중하여 예측 성능 향상.
+4. **적용 가능성:** 다양한 감정 인식 및 얼굴 기반 응용 프로그램에 활용 가능.
+
+
+
+
 인종분류 [mobilenetV4](https://huggingface.co/blog/rwightman/mobilenetv4)  
 성별분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
 연령분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
@@ -284,6 +352,7 @@ https://cdn.discordapp.com/attachments/1229239889799807042/1313442062179504200/i
 
 
 -- 각 최종모델에 대한 상세 설명 추가 (원리  ,구조 )
+
 ---
 # 시선추적 관련 calibration 생성
 https://github.com/kdt-kiosk/kiosk_gaze
