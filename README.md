@@ -217,8 +217,8 @@ https://huggingface.co/kdtFinalProject 참조
 <details>
   <summary><h2> 인종분류</h2></summary>
   
-  # VGG16 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
-   ## Summary of Results
+  ## 1.VGG16 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+   ### Summary of Results
 
   | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
   |--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
@@ -246,8 +246,8 @@ https://huggingface.co/kdtFinalProject 참조
 
   3. **Validation Observations**: 검증 정확도는 대부분 97.15%에서 97.81% 사이로 안정적인 일반화 성능을 보였습니다.
   ---
-  # MobilenetV4 (모델구조만 가져와 fine-tuning 및 tranfer Learning)  
-  ## Summary of Results
+  ## 2.MobilenetV4 (모델구조만 가져와 fine-tuning 및 tranfer Learning)  
+  ### Summary of Results
 
   | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
   |--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
