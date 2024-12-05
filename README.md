@@ -268,13 +268,47 @@ https://huggingface.co/kdtFinalProject 참조
 ex) 분류모델별 성능비교
 https://cdn.discordapp.com/attachments/1229239889799807042/1313442062179504200/image.png?ex=675025be&is=674ed43e&hm=d8e88e70b6580a5ff28bbe358bb6eef2e32a9aa447ef3efcab8585059d6f32dd&
 
+### 인종분류 Best-Performing Model Comparison
+
+| Model          | Test Accuracy | Test F1 Score | Test Precision | Test Recall | Train Accuracy | Validation Accuracy | Validation Loss |
+|----------------|---------------|---------------|----------------|-------------|----------------|---------------------|-----------------|
+| **MobileNetV4**| **0.9719**    | **0.9724**    | **0.9737**     | **0.9719**  | 0.9686         | 0.9683              | 0.0787          |
+| **VGG16**      | **0.9807**    | **0.9809**    | **0.9811**     | **0.9807**  | 0.9997         | 0.9727              | 0.1188          |
+
+다음과 같은 이유로 **MobilenetV4**를 인종분류모델로써 선택했습니다
+- mobilnetV4가 VGG16에 비해 아키텍처가 더 작고, 메모리 요구 사항이 낮으며, 추론 시간이 더 빠릅니다.
+- 키오스크는 사용자에게 즉각적인 피드백을 제공하기 위해 실시간 처리가 필요한 경우가 많습니다.
+- MobileNetV4는 스윕에서 검증 손실이 더 낮았으며, 이는 다양한 사용자가 시스템과 상호 작용하는 키오스크에서 중요한, 보이지 않는 데이터에 대해 잘 일반화되었음을 나타냅니다.  
+
+
+
 
 ~~ 선택된 최종모델
 ## 최종사용모델
 감정분류 [DDAMNet](https://github.com/SainingZhang/DDAMFN)   
 인종분류 [mobilenetV4](https://huggingface.co/blog/rwightman/mobilenetv4)  
-성별분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
-연령분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
+- UIB(Universal Inverted Bottleneck): 이 유연한 구조는 IB(Inverted Bottleneck), ConvNext, FFN(Feed Forward Network) 및 새로운 ExtraDW(ExtraDW) 변형을 포함한 다양한 아키텍처 요소를 통합합니다. 이러한 요소는 집합적으로 모델의 성능과 적응성을 향상시킵니다.
+- 모바일 MQA: 모바일 액셀러레이터용으로 설계된 특수 어텐션 블록인 Mobile MQA는 기존 어텐션 메커니즘에 비해 39% 상당한 속도 향상을 달성하여 모바일 하드웨어의 추론 효율성을 높입니다.
+- 최적화된 신경 아키텍처 검색(NAS): 이 향상된 NAS 방법론은 아키텍처 검색 효율성을 향상시켜 CPU, DSP, GPU 및 Apple Neural Engine 및 Google Pixel EdgeTPU와 같은 특수 가속기를 포함한 다양한 모바일 플랫폼에서 대부분 Pareto 최적인 모델을 만듭니다.
+
+
+  
+성별분류,연령분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
+- **연결 건너뛰기(잔여 연결)**:
+  ResNet18은 하나 이상의 레이어를 우회하는 잔여 연결을 도입하여 기울기가 이전 레이어로 직접 흐를 수 있도록 합니다. 이는 Vanishing Gradient 문제를 효과적으로 해결하고 더 깊은 네트워크의 훈련을 지원합니다.
+- **아키텍처 개요:**
+  1. **첫 번째 컨볼루션 레이어:**
+입력에서 신경망이 특징을 추출하도록 3×3크기의 필터로 입력 데이터를 합성곱  
+  2. **활성화 함수 (ReLU):**  
+비선형성을 추가하여 네트워크가 복잡한 패턴을 학습할 수 있도록 컨볼루션 결과에 ReLU 활성화 함수를 적용합니다.  
+  3. **두 번째 컨볼루션 레이어:**  
+3×3 크기의 필터로 특징을 추출, 첫 번째 레이어의 출력과 동일한 수의 필터를 사용하여 차원을 일치시킵니다.  
+  4. **잔차 연결 (Residual Connection):**  
+두 번째 컨볼루션 레이어의 출력에 첫 번째 레이어의 입력을 직접 더함. 이는 잔차를 학습하도록 하며, 기울기 소실 문제를 완화시켜 더 깊은 네트워크를 효과적으로 훈련시킴.  
+  5. **활성화 함수 (ReLU):**  
+잔차 연결 후에도 ReLU 활성화 함수를 적용하여 비선형성을 유지   
+
+
 
 얼굴인식 [yolov11n-face](https://github.com/akanametov/yolo-face)  
 시선추정 [roboflow](https://blog.roboflow.com/gaze-direction-position/)    
