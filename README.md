@@ -122,13 +122,100 @@ https://huggingface.co/kdtFinalProject 참조
 
 ** val_auc 기준 sweep 상위 10개 지표 정리
 <details>
-  <summary><h1> 감정분류</h1></summary>
-  <!-- 내용 -->
+  <summary><h2> 감정분류</h2></summary>
+  
+  ## 1. PAtt-Lite 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+  
+  ### Summary of Results
+
+  | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+  |--------------------|--------|------------|------------|--------------|-------------------|---------------|---------------|----------------|---------------------|
+  | rich-sweep-5       | 20     | 7          | 8          | 0.1          | 0.00001           | 0.01          | 0.8694        | 0.8767         | 0.8833              |
+  | cool-sweep-8       | 30     | 7          | 16         | 0.45         | 0.0001            | 0.001         | 0.8832        | 0.9122         | 0.8805              |
+  | lemon-sweep-23     | 20     | 12         | 8          | 0.3          | 0.00001           | 0.05          | 0.8827        | 0.8695         | 0.8786              |
+  | logical-sweep-9    | 30     | 12         | 64         | 0.45         | 0                 | 0.0001        | 0.8718        | 0.9088         | 0.8733              |
+  | gallant-sweep-26   | 20     | 5          | 8          | 0.3          | 0.00001           | 0.001         | 0.8675        | 0.8880         | 0.8724              |
+  | soft-sweep-2       | 20     | 12         | 16         | 0.3          | 0.001             | 0.01          | 0.8675        | 0.9025         | 0.8686              |
+  | chocolate-sweep-14 | 30     | 7          | 16         | 0.45         | 0                 | 0.001         | 0.8894        | 0.9124         | 0.8667              |
+  | young-sweep-11     | 20     | 8          | 8          | 0.3          | 0.001             | 0.01          | 0.8675        | 0.8579         | 0.8657              |
+  | eager-sweep-10     | 20     | 12         | 16         | 0.5          | 0                 | 0.0001        | 0.8913        | 0.9225         | 0.8648              |
+  | olive-sweep-28     | 20     | 8          | 8          | 0.4          | 0.1               | 0.001         | 0.8732        | 0.8801         | 0.8643              |
+
+  ## Key Insights
+
+1. **최고 테스트 정확도:**
+   - `eager-sweep-10`이 **89.13%**의 가장 높은 테스트 정확도를 달성했습니다.
+     <ul>
+       <li>Batch Size: 16</li>
+       <li>Dropout Rate: 0.5</li>
+       <li>Learning Rate: 0.0001</li>
+     </ul>
+
+2. **드롭아웃 비율의 영향:**
+   - 높은 드롭아웃 비율(예: `0.45`와 `0.5`)은 대체로 테스트 정확도를 향상시켰습니다.
+   - 예외적으로 `gallant-sweep-26`은 드롭아웃 비율이 `0.3`임에도 낮은 테스트 정확도를 보였습니다.
+
+3. **학습률(Learning Rate)의 영향:**
+   - 낮은 학습률(예: `0.0001`)은 일반적으로 더 나은 결과를 가져왔으며, 특히 `eager-sweep-10`에서 뚜렷한 성능 향상을 보였습니다.
+
+4. **배치 크기(Batch Size)의 관찰:**
+   - 큰 배치 크기(예: `logical-sweep-9`의 `64`)는 반드시 더 나은 테스트 정확도를 보장하지 않았습니다. 이는 과도한 일반화(overgeneralization) 때문일 가능성이 높습니다.
+
+5. **훈련 정확도와 테스트 정확도의 일관성:**
+   - `eager-sweep-10`과 `chocolate-sweep-14`는 훈련 정확도(약 92%)와 테스트 정확도(약 89%) 사이에서 높은 일관성을 유지했습니다.
+
+  ---
+
+  ## 2. DDAMFN++ 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+
+  ### Summary of Results
+  
+  | Sweep Name         | Epochs | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+  |--------------------|--------|------------|--------------|-------------------|---------------|---------------|----------------|---------------------|
+  | dauntless-sweep-2  | 30     | 32         | 0.1          | 0.0001            | 0.0001        | 0.9252        | 0.8965         | 0.9310              |
+  | different-sweep-6  | 20     | 32         | 0.1          | 0.0001            | 0.0001        | 0.9357        | 0.9009         | 0.9300              |
+  | eager-sweep-3      | 30     | 32         | 0.1          | 0.0001            | 0.0001        | 0.9329        | 0.8968         | 0.9262              |
+  | cool-sweep-15      | 30     | 64         | 0.5          | 0.001             | 0.0001        | 0.9205        | 0.7808         | 0.9238              |
+  | pious-sweep-1      | 30     | 32         | 0.1          | 0.0001            | 0.0001        | 0.9233        | 0.8899         | 0.9238              |
+  | dulcet-sweep-7     | 30     | 64         | 0.3          | 0.001             | 0.0001        | 0.9257        | 0.8529         | 0.9171              |
+  | mild-sweep-3       | 30     | 64         | 0.1          | 0.001             | 0.00001       | 0.9267        | 0.8711         | 0.9171              |
+  | lyric-sweep-11     | 30     | 128        | 0.5          | 0.001             | 0.0001        | 0.9290        | 0.7931         | 0.9167              |
+  | classic-sweep-5    | 30     | 128        | 0.5          | 0.001             | 0.0001        | 0.9295        | 0.7848         | 0.9162              |
+  | silver-sweep-12    | 20     | 128        | 0.3          | 0.001             | 0.0001        | 0.9281        | 0.8566         | 0.9152              |
+  
+  
+  
+  ### Key Insights
+  
+  1. **최고 테스트 정확도:**
+     - `different-sweep-6`이 **93.57%**의 가장 높은 테스트 정확도를 달성했습니다.
+       <ul>
+         <li>Batch Size: 32</li>
+         <li>Dropout Rate: 0.1</li>
+         <li>Learning Rate: 0.0001</li>
+       </ul>
+  
+  2. **드롭아웃 비율의 영향:**
+     - 낮은 드롭아웃 비율(예: `0.1`)은 대체로 더 높은 테스트 정확도를 기록했습니다.
+     - 그러나 `cool-sweep-15`와 같은 높은 드롭아웃 비율(0.5)은 낮은 훈련 정확도와 일관되지 않은 성능을 보였습니다.
+  
+  3. **학습률(Learning Rate)의 중요성:**
+     - 모든 실험에서 **0.0001**의 학습률이 사용되었으며, 이는 일관된 성능을 유지하는 데 긍정적인 영향을 미쳤습니다.
+  
+  4. **배치 크기(Batch Size)의 관찰:**
+     - 작은 배치 크기(32)는 높은 정확도를 달성하는 데 유리했으며, 특히 `different-sweep-6`과 같은 모델에서 두드러졌습니다.
+     - 큰 배치 크기(128)는 훈련 정확도와 테스트 정확도의 일관성이 떨어지는 경향이 있었습니다.
+  
+  5. **훈련과 테스트 정확도의 일치:**
+     - `eager-sweep-3`와 `dauntless-sweep-2`는 훈련 정확도(약 89%)와 테스트 정확도(약 93%) 사이에서 높은 일관성을 유지했습니다.
+  
+  ---
+
 </details>
 
 
 <details>
-  <summary><h1> 인종분류</h1></summary>
+  <summary><h2> 인종분류</h2></summary>
   
   # VGG16 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
    ## Summary of Results
@@ -190,11 +277,11 @@ https://huggingface.co/kdtFinalProject 참조
 </details>
 
 <details>
-  <summary><h1>성별분류</h1></summary>
+  <summary><h2>성별분류</h2></summary>
 
 
-  # ResNet18 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
-  ## Summary of Results
+  ## 1.ResNet18 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+  ### Summary of Results
 
  | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
   |--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
@@ -222,7 +309,56 @@ https://huggingface.co/kdtFinalProject 참조
 
   3. **Validation Observations**: 대부분의 sweep에서 검증 정확도가 95.92%에서 96.81%로 안정적으로 유지되며, 일반화가 잘 이루어졌음을 보여줍니다.
 ----
-# 다른모델
+
+
+
+ ## 2. Mini-Xception 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+  ### Summary of Results
+  
+  | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+  |--------------------|--------|------------|------------|--------------|-------------------|---------------|---------------|----------------|---------------------|
+  | sweepy-sweep-17    | 20     | 6          | 32         | 0.55         | 0.1               | 0.000001      | 0.8050        | 0.7441         | 0.8062              |
+  | eternal-sweep-21   | 30     | 4          | 64         | 0.2          | 0.00001           | 0.000005      | 0.8104        | 0.7892         | 0.8058              |
+  | winter-sweep-18    | 20     | 5          | 16         | 0.15         | 0.0001            | 0.0001        | 0.8119        | 0.7921         | 0.8058              |
+  | grateful-sweep-20  | 20     | 4          | 16         | 0.5          | 0.1               | 0.000001      | 0.8096        | 0.7517         | 0.8054              |
+  | volcanic-sweep-27  | 30     | 3          | 16         | 0.2          | 0                 | 0.0001        | 0.8142        | 0.7887         | 0.8054              |
+  | light-sweep-19     | 20     | 4          | 64         | 0.3          | 0.0001            | 0.000005      | 0.8108        | 0.7785         | 0.8050              |
+  | spring-sweep-29    | 30     | 3          | 32         | 0.25         | 0.1               | 0.000001      | 0.8127        | 0.7848         | 0.8050              |
+  | hopeful-sweep-30   | 30     | 3          | 32         | 0.5          | 0.01              | 0.00001       | 0.8115        | 0.7571         | 0.8031              |
+  | fearless-sweep-25  | 30     | 3          | 32         | 0            | 0.0001            | 0.0005        | 0.8123        | 0.8001         | 0.8031              |
+  | sleek-sweep-16     | 30     | 8          | 64         | 0            | 0                 | 0.001         | 0.8054        | 0.7997         | 0.8027              |
+  
+  
+  ---
+  
+  ### Key Insights
+  
+  1. **최고 테스트 정확도:**
+     - `volcanic-sweep-27`이 **81.42%**의 가장 높은 테스트 정확도를 기록했습니다.
+       <ul>
+         <li>Batch Size: 16</li>
+         <li>Dropout Rate: 0.2</li>
+         <li>Learning Rate: 0.0001</li>
+       </ul>
+  
+  2. **드롭아웃 비율의 영향:**
+     - 높은 드롭아웃 비율(예: `0.5`)은 대체로 낮은 훈련 정확도와 일관되지 않은 테스트 정확도를 보였습니다.
+     - 낮은 드롭아웃 비율(예: `0.2` 및 `0.25`)은 더 높은 테스트 정확도를 보장하는 경향이 있었습니다.
+  
+  3. **학습률(Learning Rate)의 영향:**
+     - 낮은 학습률(예: `0.0001`)은 모델 안정성과 테스트 정확도를 높이는 데 효과적이었습니다.
+  
+  4. **배치 크기(Batch Size)의 관찰:**
+     - 중간 배치 크기(32)가 대부분의 실험에서 높은 테스트 정확도를 기록했습니다.
+     - 큰 배치 크기(64)는 테스트 정확도에 부정적인 영향을 미치는 경향이 있었습니다.
+  
+  5. **훈련과 테스트 정확도의 일치:**
+     - `volcanic-sweep-27`과 `fearless-sweep-25`는 훈련 정확도(약 80%)와 테스트 정확도(약 81%) 사이에서 높은 일관성을 유지했습니다.
+  
+
+
+---
+
 
 
 </details>
@@ -303,7 +439,63 @@ https://huggingface.co/kdtFinalProject 참조
 
 
 ## 최종사용모델
-감정분류 [DDAMNet](https://github.com/SainingZhang/DDAMFN) 
+<details>
+  <summary><h3>1. 감정분류 - DDAMNet</h3></summary>
+  
+  [DDAMNet GitHub](https://github.com/SainingZhang/DDAMFN)<br>
+  [DDAMNet Paper](https://www.mdpi.com/2079-9292/12/17/3595)
+  #### 구조 및 원리
+  ![image](https://github.com/user-attachments/assets/b4ec1c20-1452-4018-a310-81e92cfd9a08)
+  ##### 개요
+  DDAMFN(Dual-Direction Attention Mixed Feature Network)은 얼굴 표정 인식(Facial Expression Recognition, FER)을 위해 설계된 경량화되고 강력한 딥러닝 모델입니다. 이 네트워크는 입력 이미지로부터 특징을 추출하고, 중요한 부분에 집중하여 얼굴 표정을 정확하게 예측합니다. DDAMFN은 크게 두 가지 주요 구성 요소로 나뉩니다:
+  1. **MFN (Mixed Feature Network):** 얼굴 이미지로부터 기본적인 특징을 추출.
+  2. **DDAN (Dual-Direction Attention Network):** 추출된 특징을 분석하고, 얼굴에서 중요한 부분에 주의를 집중.
+  
+  ##### 모델 구조
+  
+  ###### 1. **Feature Extraction (특징 추출)**
+  - 입력 이미지 크기: \(112 \times 112\)
+  - **MFN (Mixed Feature Network):**
+    - 다양한 크기의 합성곱 커널(MixConv)을 사용하여 얼굴 이미지에서 세부적이고 전반적인 특징을 추출합니다.
+    - Residual Bottleneck 구조를 통해 정보 손실을 방지하고, 효율적인 학습이 가능하도록 설계되었습니다.
+    - Stride-1과 Stride-2 블록을 활용하여 세부 정보와 주요 특징을 모두 보존합니다.
+    - **Coordinate Attention**을 적용하여 얼굴 이미지의 중요한 위치(눈, 코, 입 등)를 강조합니다.
+    - 최종적으로 \(7 \times 7 \times 512\) 크기의 특징 맵을 생성합니다.
+  
+  ###### 2. **Attention Module (주의 모듈)**
+  - **Dual Direction Attention (DDA):**
+    - 두 가지 방향으로 주의를 분석:
+      - **수평 방향(X Linear GDConv):** 얼굴의 좌우 영역을 분석.
+      - **수직 방향(Y Linear GDConv):** 얼굴의 위아래 영역을 분석.
+    - 두 방향의 결과를 결합(Concatenate & Conv2D)하여 종합적인 주의 맵을 생성합니다.
+  - **주의 맵 생성:** 중요한 부분을 강조하고, 덜 중요한 영역의 영향을 줄입니다.
+  - **MAX 연산:** 여러 주의 맵 중에서 가장 유용한 맵을 선택합니다.
+  - **곱셈 연산:** 주의 맵과 기존 특징 맵을 결합하여, 모델이 얼굴의 중요한 영역에 집중할 수 있도록 합니다.
+  
+  ###### 3. **Feature Transformation (특징 변환)**
+  - **Global Depthwise Convolution (GDConv):**
+    - 주의 맵이 결합된 특징 맵을 압축하여 \(1 \times 1 \times 512\) 크기로 변환합니다.
+  - **Reshape:** 특징 맵을 256차원의 벡터로 변환하여 최종 예측에 사용합니다.
+  
+  ###### 4. **Fully Connected Layer (완전 연결 계층)**
+  - 변환된 256차원 벡터는 완전 연결 계층(FC Layer)을 통과하여, 입력 얼굴 이미지의 감정을 예측합니다.
+  - **손실 함수(Loss Function):**
+    - **Cross-Entropy Loss (\(L_{cls}\)):** 모델의 감정 예측 성능을 최적화합니다.
+    - **Attention Loss (\(L_{att}\)):** 주의 모듈이 서로 다른 얼굴 영역에 집중하도록 유도합니다.
+  
+  ##### 동작 원리 요약
+  1. **MFN (특징 추출):** 얼굴 이미지로부터 다양한 크기의 커널을 활용해 세부적이고 전반적인 특징을 추출.
+  2. **DDAN (주의 모듈):** 두 방향(수평, 수직)으로 얼굴의 중요한 영역을 분석하고, 주의 맵을 생성.
+  3. **Feature Transformation:** 추출된 특징을 압축하고 변환하여 예측 가능한 벡터로 변환.
+  4. **FC Layer:** 최종 예측을 통해 얼굴 감정을 분류.
+  
+  ##### 모델의 강점
+  1. **경량화:** 계산량을 줄이면서도 높은 정확도를 유지.
+  2. **효율적인 특징 추출:** 다양한 크기의 커널과 Residual Bottleneck 구조를 활용.
+  3. **주의 메커니즘:** 얼굴의 중요한 부분에 집중하여 예측 성능 향상.
+  4. **적용 가능성:** 다양한 감정 인식 및 얼굴 기반 응용 프로그램에 활용 가능.
+</details>
+
 
 <details>
   <summary><h3>2.인종분류 MobilenetV4</h3></summary>
@@ -407,7 +599,76 @@ https://huggingface.co/kdtFinalProject 참조
 
 
 얼굴인식 [yolov11n-face](https://github.com/akanametov/yolo-face)  
-시선추정 [roboflow](https://blog.roboflow.com/gaze-direction-position/)    
+<details>
+  <summary><h3>6. 시선추정 - L2CS-Net</h3></summary>
+  [L2CS-Net Paper](https://arxiv.org/abs/2203.03339)<br>
+  [L2CS-Net GitHub](https://github.com/Ahmednull/L2CS-Net)<br>
+  [L2CS-Net roboflow](https://blog.roboflow.com/gaze-direction-position/)<br>
+  
+  #### 구조 및 원리
+  ![image](https://github.com/user-attachments/assets/b7573e01-bcce-4b90-b3ca-e7a149caf802)
+  
+  ##### 개요
+  L2CS-Net은 **시선 추정(Gaze Estimation)**을 위한 딥러닝 기반 네트워크로, 입력 얼굴 이미지를 이용하여 사람의 수평(Yaw) 및 수직(Pitch) 방향의 시선을 정확히 예측하는 모델입니다. 이 모델은 **분류(Classification)**와 **회귀(Regression)** 기법을 결합하여 시선 추정 정확도와 효율성을 극대화합니다.
+  
+  ##### 모델 구조
+  
+  ###### 1. **입력 (Face Images)**
+  - **입력 데이터:**
+    - 얼굴 이미지를 네트워크에 입력으로 사용하며, 얼굴 탐지 및 정규화를 통해 전처리된 이미지입니다.
+  - **목표:**
+    - 입력 얼굴에서 수평(Yaw) 및 수직(Pitch) 방향 시선을 추정합니다.
+  
+  ###### 2. **백본 네트워크 (ResNet-50 Backbone)**
+  - **역할:**
+    - ResNet-50은 입력 이미지에서 중요한 고차원 특징을 추출합니다.
+  - **구조:**
+    - ResNet-50은 합성곱(CNN) 레이어로 구성되어 있으며, 입력 이미지의 공간적 패턴을 학습합니다.
+  - **출력:**
+    - ResNet-50은 추출된 특징을 Fully Connected Layers로 전달합니다.
+  
+  ###### 3. **Fully Connected Layers (FC Layers)**
+  - ResNet-50에서 추출된 특징은 두 개의 Fully Connected Layer로 전달됩니다.
+  - 두 FC Layer는 각각 **Yaw(수평)**와 **Pitch(수직)** 방향의 시선을 예측합니다.
+  
+  ###### 4. **Yaw 및 Pitch 헤드 (Multi-Head Output)**
+  4.1 **Yaw 헤드**
+  - **Softmax 분류:** 수평 각도 클래스(예: -30°, -15°, 0°, 15°, 30° 등)에 대해 확률 분포를 계산합니다.
+  - **Expectation 계산:** Softmax 확률을 기반으로 각 클래스의 기대값을 계산하여 연속적인 각도를 예측합니다.
+  
+  4.2 **Pitch 헤드**
+  - **Softmax 분류:** 수직 각도 클래스(예: -30°, -15°, 0°, 15°, 30° 등)에 대해 확률 분포를 계산합니다.
+  - **Expectation 계산:** Softmax 확률을 기반으로 각 클래스의 기대값을 계산하여 연속적인 각도를 예측합니다.
+  
+  ###### 5. **손실 함수 (Proposed Loss Function)**
+  L2CS-Net은 **분류 손실**과 **회귀 손실**을 결합하여 학습합니다:
+  
+  5.1 **Yaw 손실**
+  - **크로스 엔트로피 손실 (Cross Entropy Loss):** 클래스 확률과 실제 각도 클래스 간 차이를 줄입니다.
+  - **평균 제곱 오차 (Mean Squared Error, MSE):** 계산된 기대값과 실제 연속값 간의 오차를 줄입니다.
+  - **총 손실:**
+    \[
+    \text{Total Yaw Error} = \text{Cross Entropy Loss} + \text{Mean Squared Error}
+    \]
+  
+  5.2 **Pitch 손실**
+  - Pitch 손실은 Yaw 손실과 동일한 방식으로 계산됩니다:
+    \[
+    \text{Total Pitch Error} = \text{Cross Entropy Loss} + \text{Mean Squared Error}
+    \]
+  
+  ##### 동작 원리 요약
+  1. **입력 처리:** 얼굴 이미지를 네트워크에 입력.
+  2. **특징 추출:** ResNet-50 백본을 통해 고차원 특징을 추출.
+  3. **Yaw 및 Pitch 헤드:** 각각 수평(Yaw) 및 수직(Pitch) 방향에 대해 Softmax와 기대값 계산으로 각도 예측.
+  4. **손실 함수 최적화:** 분류 손실과 회귀 손실을 결합하여 모델 학습.
+  
+  ##### 모델의 특징
+  - **효율성:** ResNet-50을 백본으로 사용하여 고차원 특징 추출.
+  - **정확성:** 분류와 회귀를 결합하여 연속적인 각도를 예측.
+  - **적용 가능성:** 다양한 시선 추정 응용 분야(예: AR/VR, 주의 모니터링, 졸음 감지)에 적합.
+</details>
+
 
 
 -- 각 최종모델에 대한 상세 설명 추가 (원리  ,구조 )
