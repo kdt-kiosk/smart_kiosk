@@ -600,7 +600,7 @@ https://huggingface.co/kdtFinalProject 참조
   [YOLOv11n-Face GitHub](https://github.com/akanametov/yolo-face)<br>  
 
 #### **구조 및 원리**  
-![image](https://github.com/user-attachments/assets/example-placeholder-image)  
+
 
 ##### **개요**  
 YOLOv11n-Face는 **얼굴 탐지(Face Detection)** 및 **인식(Recognition)**을 위해 설계된 딥러닝 모델입니다. YOLO(You Only Look Once) 아키텍처를 기반으로 하며, 객체 탐지 기술의 발전을 활용하여 실시간 애플리케이션에 적합한 효율적이고 정확한 얼굴 탐지 솔루션을 제공합니다.
