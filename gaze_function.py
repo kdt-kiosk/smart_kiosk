@@ -5,6 +5,7 @@ import base64
 import requests
 from dotenv import load_dotenv
 import os
+import pickle
 
 # .env 파일 로드
 load_dotenv()
@@ -14,8 +15,68 @@ GAZE_DETECTION_URL = os.getenv("GAZE_DETECTION_URL")
 file_path_x_pkl = "./calibration/x_model_web.pkl"
 file_path_y_pk = "./calibration/y_model_web.pkl"
 
+# 카메라 왜곡 보정
+def undistort_frame(frame, calibration_file_path='distortion_correction.pkl'):
+    """
+    주어진 프레임의 왜곡을 제거하는 함수.
+    
+    Args:
+        frame (numpy.ndarray): 입력 프레임 (웹캠 등에서 캡처된 이미지).
+        calibration_file_path (str): 카메라 왜곡 보정 데이터를 저장한 파일 경로. 
+                                     기본값은 'distortion_correction.pkl'.
+    
+    Returns:
+        numpy.ndarray: 왜곡이 제거된 프레임.
+    """
+    # calibration 파일로 경로 고정
+    calibration_path = os.path.join("calibration", calibration_file_path)
+
+    # 파일이 존재하지 않으면 입력 프레임 그대로 반환
+    if not os.path.exists(calibration_path):
+        print(f"왜곡 보정 파일을 찾을 수 없습니다. 원본 프레임을 반환합니다: {calibration_path}")
+        return frame
+
+    # 왜곡 보정 데이터 불러오기
+    with open(calibration_path, 'rb') as f:
+        data = pickle.load(f)
+    mtx = data['mtx']
+    dist = data['dist']
+    
+    # 입력 프레임 크기 가져오기
+    h, w = frame.shape[:2]
+    
+    # 새로운 카메라 매트릭스 계산
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+    
+    # 왜곡 보정
+    undistorted_frame = cv2.undistort(frame, mtx, dist, None, newcameramtx)
+    
+    ## # ROI를 사용하여 검은 영역 제거 (선택 사항)
+    ## # 왜곡 제거 후 남는 검은 영역을 제거하기 위해 ROI를 사용하여 이미지 크롭. 적용하면 원본과 크기가 달라지니 유의
+    # x, y, w, h = roi
+    # undistorted_frame = undistorted_frame[y:y+h, x:x+w]
+    
+    return undistorted_frame
+
 # 시선 보정
 def calibraion(predicted_x, predicted_y):
+    '''
+    주어진 x, y 좌표(예측값)를 사전 학습된 모델을 사용해 보정하여 정확한 시선 좌표를 반환합니다.
+
+    매개변수:
+        - predicted_x (float or int): 예측된 x 좌표.
+        - predicted_y (float or int): 예측된 y 좌표.
+    글로벌 변수:
+        - file_path_x_pkl: x 좌표 보정 모델이 저장된 .pkl 파일 경로.
+        - file_path_y_pk: y 좌표 보정 모델이 저장된 .pkl 파일 경로.
+    작동 과정:
+        joblib.load()를 사용하여 x와 y 좌표에 대한 보정 모델을 각각 로드합니다.
+        예측된 x와 y 좌표를 각각 모델에 입력하여 보정된 좌표를 계산합니다.
+        np.rint()로 보정된 좌표를 반올림하고 정수로 변환합니다.
+        보정된 x와 y 좌표를 반환합니다.
+    반환값:
+        - (int, int): 보정된 x, y 좌표.
+    '''
     global file_path_x_pkl, file_path_y_pk
     x_model = joblib.load(file_path_x_pkl)
     y_model = joblib.load(file_path_y_pk)
@@ -25,6 +86,20 @@ def calibraion(predicted_x, predicted_y):
 
 # 시선 추정
 def detect_gazes(frame: np.ndarray):
+    '''
+    주어진 이미지 프레임에서 시선을 추정하여 좌표값을 반환합니다. 외부 API를 사용합니다.
+    매개변수:
+        frame (numpy.ndarray): 웹캠 등에서 캡처된 이미지 프레임.
+    작동 과정:
+        프레임을 JPEG 형식으로 인코딩합니다.
+        인코딩된 이미지를 Base64 형식으로 변환합니다.
+        HTTP POST 요청을 통해 시선 추정 API를 호출합니다. 요청 데이터는 다음과 같습니다:
+        API 키: API_KEY를 사용하여 인증.
+        이미지 데이터: Base64로 인코딩된 이미지.
+        API 응답에서 시선 추정 좌표(predictions)를 추출합니다.
+    반환값:
+        gazes (list): 시선 추정 결과를 포함하는 리스트. 각 항목은 시선 좌표 정보를 포함.
+    '''
     img_encode = cv2.imencode(".jpg", frame)[1]
     img_base64 = base64.b64encode(img_encode)
     resp = requests.post(

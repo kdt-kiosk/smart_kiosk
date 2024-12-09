@@ -14,7 +14,7 @@ from predict_emo_ddamfn import predict_emo
 import base64
 import requests
 from dotenv import load_dotenv
-from gaze_function import calibraion, resize_with_padding
+from gaze_function import calibraion, resize_with_padding, undistort_frame
 from collections import Counter
 import ctypes
 from flask_socketio import SocketIO
@@ -123,6 +123,7 @@ def generate_frames():
             break
 
         frame = cv2.flip(frame, 1)  # 좌우 반전 처리
+        frame = undistort_frame(frame)
 
         # YOLO 모델로 얼굴 감지
         results = face_model.predict(frame, stream=True)
@@ -230,6 +231,7 @@ def gaze_tracking():
         if not ret:
             continue
         frame = cv2.flip(frame, 1) # 좌우반전
+        frame = undistort_frame(frame)
         frame = resize_with_padding(frame, SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # 프레임을 Docker API로 전송
