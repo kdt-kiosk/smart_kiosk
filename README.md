@@ -746,8 +746,6 @@ Senior UI
 ![image](https://github.com/user-attachments/assets/b3e526a8-38bb-42e7-aef8-d3824decc0b6)
 
 
-언어선택도 포함
-senior UI에 대한 설
 
 # 시연 동영상
 
@@ -766,7 +764,7 @@ https://github.com/user-attachments/assets/f4172814-cdc7-4af5-85de-da0e1a692c96
 https://github.com/user-attachments/assets/54ce00b6-655c-4a77-b058-c0359bc9db30
 
 
-# 결
+# 결과
 AI 모델을 이용해서 사용자 맞춤 서비스를 이용할수있다
 취약층 계층에게 시선으로만 주문이 가능하게 만들어 접근성을 높인다. <- 이런식으로 작성 Backgroud 참고
 
