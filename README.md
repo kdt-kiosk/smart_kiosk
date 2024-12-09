@@ -5,12 +5,7 @@ Subtitle: 누구나 쉽게 주문할 수 있는 시스템
 ![image](https://github.com/user-attachments/assets/33a34af3-22a5-435e-b9eb-1d08d0dd4153)
 
 
-## Backgroud
-키오스크 설치 증가
-고령층 장벽
-외국인 장벽
 
-배경설명 좀더자세
 
 
 # Dataset
@@ -738,8 +733,19 @@ https://github.com/kdt-kiosk/kiosk_gaze
 
 
 --- 
-# UI 설명 간단히
-recommend 중심으로 해야함
+# UI
+
+일반 UI
+![image](https://github.com/user-attachments/assets/3c695953-b2d3-4f2b-a2f5-5f30f6ad819f)
+
+
+Senior UI
+![image](https://github.com/user-attachments/assets/20beeb36-6db0-4735-af55-3354d00bb5cf)
+
+외국인으로 인식될시 메뉴화면대신 언어선택창이 먼저 출력
+![image](https://github.com/user-attachments/assets/b3e526a8-38bb-42e7-aef8-d3824decc0b6)
+
+
 언어선택도 포함
 senior UI에 대한 설
 
@@ -760,7 +766,7 @@ https://github.com/user-attachments/assets/f4172814-cdc7-4af5-85de-da0e1a692c96
 https://github.com/user-attachments/assets/54ce00b6-655c-4a77-b058-c0359bc9db30
 
 
-# 결론
+# 결
 AI 모델을 이용해서 사용자 맞춤 서비스를 이용할수있다
 취약층 계층에게 시선으로만 주문이 가능하게 만들어 접근성을 높인다. <- 이런식으로 작성 Backgroud 참고
 
