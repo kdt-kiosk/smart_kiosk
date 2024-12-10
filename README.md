@@ -5,12 +5,7 @@ Subtitle: 누구나 쉽게 주문할 수 있는 시스템
 ![image](https://github.com/user-attachments/assets/33a34af3-22a5-435e-b9eb-1d08d0dd4153)
 
 
-## Backgroud
-키오스크 설치 증가
-고령층 장벽
-외국인 장벽
 
-배경설명 좀더자세
 
 
 # Dataset
@@ -109,12 +104,17 @@ Subtitle: 누구나 쉽게 주문할 수 있는 시스템
 
 ----
 # 사용한 모델
+  ## Hyperparameter Sweep Results
 
+   이 문서는 모델 학습을 위해 실행된 하이퍼파라미터 스윕의 결과를 요약한 내용입니다. 아래는 각 스윕과 그 결과에 대한 세부 정보입니다.
+
+  ### Sweep Overview
+
+  모델 학습을 위한 최적의 하이퍼파라미터를 찾기 위해 다양한 `batch_size`, `dropout_rate`, `epochs`, `l2_reg`, `learning_rate` 값을 실험하였습니다.
 
 https://huggingface.co/kdtFinalProject 참조
 -----
 
-** val_auc 기준 sweep 상위 10개 지표 정리
 <details>
   <summary><h2> 감정분류</h2></summary>
   
@@ -208,14 +208,105 @@ https://huggingface.co/kdtFinalProject 참조
 </details>
 
 
+<details>
+  <summary><h2> 인종분류</h2></summary>
+  
+  ## 1.VGG16 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+   ### Summary of Results
 
-## 인종분류
+  | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+  |--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
+  | giddy-sweep-11     | 15     | 15         | 32         | 0.2          | 0.0001             | 0.0001        | 0.9777        | 0.9963         | 0.9781               |
+  | vivid-sweep-12     | 15     | 15         | 64         | 0.1          | 0.000001           | 0.0001        | 0.9781        | 1.0000         | 0.9777               |
+  | sage-sweep-16      | 15     | 15         | 128        | 0.1          | 0.000001           | 0.0001        | 0.9792        | 1.0000         | 0.9769               |
+  | rare-sweep-7       | 15     | 15         | 128        |              | 0.00001            | 0.0004        | 0.9796        | 1.0000         | 0.9762               |
+  | honest-sweep-9     | 10     | 10         | 64         | 0.3          | 0.000001           | 0.0004        | 0.9796        | 0.9972         | 0.9762               |
+  | volcanic-sweep-20  | 15     | 4          | 128        | 0.2          | 0.000001           | 0.0001        | 0.9792        | 0.9979         | 0.9758               |
+  | lively-sweep-18    | 15     | 15         | 128        |              | 0.000001           | 0.0001        | 0.9800        | 1.0000         | 0.9754               |
+  | soft-sweep-15      | 15     | 11         | 64         | 0.2          | 0.0001             | 0.0001        | 0.9800        | 0.9987         | 0.9742               |
+  | smooth-sweep-8     | 10     | 10         | 64         | 0.1          | 0.0001             | 0.0004        | 0.9792        | 0.9998         | 0.9738               |
+  | daily-sweep-13     | 15     | 15         | 128        | 0.3          | 0.000001           | 0.0004        | 0.9785        | 0.9994         | 0.9738               |
+
+  ## Key Insights
+
+  1. **Best Performance**: `lively-sweep-18`은 **98.00%**의 가장 높은 테스트 정확도를 달성하였습니다.
+     - Batch Size: 128
+     - Dropout Rate: 
+     - Epochs: 15
+     - L2 Regularization: 0.000001
+     - Learning Rate: 0.0001
+
+  2. **Optimal Trade-off**: `giddy-sweep-11`와 `sage-sweep-16`은 효율적인 실행 시간으로 약 97%의 성능을 제공했습니다.
+
+  3. **Validation Observations**: 검증 정확도는 대부분 97.15%에서 97.81% 사이로 안정적인 일반화 성능을 보였습니다.
+  ---
+  ## 2.MobilenetV4 (모델구조만 가져와 fine-tuning 및 tranfer Learning)  
+  ### Summary of Results
+
+  | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+  |--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
+  | vague-sweep-16     | 10     | 5          | 128        | 0.2          | 0.000001           | 0.01          | 0.9665        | 0.9672         | 0.9700               |
+  | winter-sweep-2     | 15     | 4          | 32         |              | 0.0001             | 0.0004        | 0.9692        | 0.9682         | 0.9673               |
+  | serene-sweep-6     | 10     | 4          | 16         | 0.2          | 0.00001            | 0.0004        | 0.9665        | 0.9655         | 0.9673               |
+  | driven-sweep-15    | 15     | 5          | 32         | 0.3          | 0.0001             | 0.0004        | 0.9719        | 0.9687         | 0.9669               |
+  | generous-sweep-12  | 15     | 4          | 64         | 0.2          | 0.000001           | 0.01          | 0.9669        | 0.9596         | 0.9662               |
+  | fluent-sweep-13    | 15     | 4          | 128        |              | 0.000001           | 0.001         | 0.9650        | 0.9705         | 0.9642               |
+  | ethereal-sweep-3   | 10     | 5          | 32         | 0.1          | 0.000001           | 0.01          | 0.9623        | 0.9602         | 0.9635               |
+  | visionary-sweep-19 | 15     | 5          | 32         | 0.3          | 0.0001             | 0.01          | 0.9542        | 0.9546         | 0.9623               |
+  | olive-sweep-20     | 10     | 4          | 32         | 0.3          | 0.000001           | 0.0004        | 0.9685        | 0.9672         | 0.9619               |
+  | whole-sweep-5      | 15     | 5          | 128        | 0.2          | 0.0001             | 0.01          | 0.9619        | 0.9591         | 0.9615               |
+
+  ## Key Insights
+
+  1. **Best Performance**:  `driven-sweep-15`은 **97.19%**의 가장 높은 테스트 정확도를 달성하였습니다.
+     - Batch Size: 32
+     - Dropout Rate: 0.3
+     - Epochs: 15
+     - L2 Regularization: 0.0001
+     - Learning Rate: 0.0004
+
+  2. **Optimal Trade-off**:  `winter-sweep-2`와 `serene-sweep-6`은 효율적인 실행 시간으로 약 96%의 성능을 제공했습니다.
+
+  3. **Validation Observations**: 검증 정확도는 대부분 96.15%에서 97.00% 사이로 안정적인 일반화 성능을 보였습니다.
+</details>
 
 <details>
-  <summary><h2> 성별분류</h2></summary>
-  
-  ## 1. Mini-Xception 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
-  ### 변환된 Markdown 및 Key Insights
+  <summary><h2>성별분류</h2></summary>
+
+
+  ## 1.ResNet18 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+  ### Summary of Results
+
+ | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+  |--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
+  | easy-sweep-11      | 10     | 7          | 32         | 0.3          | 0.000001           | 0.0001        | 0.9727        | 0.9960         | 0.9681               |
+  | sweepy-sweep-17    | 10     | 4          | 16         | 0.3          | 0.000001           | 0.0001        | 0.9712        | 0.9818         | 0.9638               |
+  | woven-sweep-15     | 10     | 5          | 16         | 0.3          | 0.000001           | 0.0001        | 0.9612        | 0.9855         | 0.9635               |
+  | cool-sweep-9       | 15     | 11         | 32         | 0.3          | 0.000001           | 0.0001        | 0.9619        | 0.9946         | 0.9635               |
+  | golden-sweep-6     | 15     | 4          | 64         | 0.3          | 0.00001            | 0.0001        | 0.9692        | 0.9885         | 0.9615               |
+  | snowy-sweep-10     | 15     | 6          | 32         | 0.3          | 0.000001           | 0.0001        | 0.9635        | 0.9914         | 0.9612               |
+  | swift-sweep-18     | 10     | 4          | 16         | 0.3          | 0.000001           | 0.0001        | 0.9635        | 0.9800         | 0.9612               |
+  | charmed-sweep-14   | 15     | 8          | 32         | 0.3          | 0.000001           | 0.0001        | 0.9635        | 0.9949         | 0.9600               |
+  | avid-sweep-20      | 10     | 8          | 16         | 0.3          | 0.00001            | 0.0001        | 0.9650        | 0.9895         | 0.9596               |
+  | generous-sweep-12  | 15     | 4          | 32         | 0.3          | 0.000001           | 0.0001        | 0.9642        | 0.9874         | 0.9592               |
+
+  ## Key Insights
+
+  1. **Best Performance**: `easy-sweep-11`이 **97.27%**의 가장 높은 테스트 정확도를 달성하였습니다
+     - Batch Size: 32
+     - Dropout Rate: 0.3
+     - Epochs: 10
+     - L2 Regularization: 0.000001
+     - Learning Rate: 0.0001
+
+  2. **Optimal Trade-off**: `sweepy-sweep-17`과 `swift-sweep-18`은 약 96%의 테스트 정확도를 제공하면서도 실행 시간이 20분 미만으로 짧았습니다.
+
+  3. **Validation Observations**: 대부분의 sweep에서 검증 정확도가 95.92%에서 96.81%로 안정적으로 유지되며, 일반화가 잘 이루어졌음을 보여줍니다.
+----
+
+
+
+ ## 2. Mini-Xception 모델 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
   ### Summary of Results
   
   | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
@@ -258,47 +349,152 @@ https://huggingface.co/kdtFinalProject 참조
   5. **훈련과 테스트 정확도의 일치:**
      - `volcanic-sweep-27`과 `fearless-sweep-25`는 훈련 정확도(약 80%)와 테스트 정확도(약 81%) 사이에서 높은 일관성을 유지했습니다.
   
-  ---
-  
-  </details>
-
-## 연령분류
 
 
-만약 토글이 안된다면 따로 페이지 생성해서 작성
+---
+
+
+
+</details>
+
+
+<details>
+  <summary><h2> 연령분류</h2></summary>
+  # ResNet18 (사전학습된 모델을 fine-tuning 및 tranfer Learning)
+
+  ## Summary of Results
+
+  | Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+  |--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
+  | splendid-sweep-9   | 10     | 7          | 128        | 0.3          | 0.000001           | 0.0001        | 0.8085        | 0.9875         | 0.8162               |
+  | deft-sweep-16      | 10     | 10         | 128        |              | 0.0001             | 0.0001        | 0.8077        | 0.9906         | 0.8158               |
+  | charmed-sweep-5    | 15     | 12         | 128        | 0.2          | 0.000001           | 0.0001        | 0.8050        | 0.9916         | 0.8131               |
+  | autumn-sweep-13    | 10     | 9          | 128        |              | 0.000001           | 0.0001        | 0.8054        | 0.9909         | 0.8123               |
+  | glorious-sweep-10  | 15     | 5          | 128        | 0.3          | 0.000001           | 0.0001        | 0.8173        | 0.9828         | 0.8115               |
+  | stellar-sweep-10   | 10     | 10         | 128        |              | 0.00001            | 0.0001        | 0.8104        | 0.9902         | 0.8112               |
+  | devoted-sweep-15   | 10     | 10         | 128        |              | 0.000001           | 0.0001        | 0.8100        | 0.9885         | 0.8112               |
+  | decent-sweep-19    | 10     | 7          | 128        |              | 0.0001             | 0.0001        | 0.8023        | 0.9869         | 0.8104               |
+  | golden-sweep-20    | 10     | 10         | 128        |              | 0.00001            | 0.0001        | 0.8050        | 0.9898         | 0.8096               |
+  | giddy-sweep-19     | 10     | 4          | 128        | 0.2          | 0.000001           | 0.0001        | 0.7946        | 0.9767         | 0.8081               |
+
+  ## Key Insights
+
+  1. **Best Performance**:  `glorious-sweep-10`은 **81.73%**의 가장 높은 테스트 정확도를 달성하였습니다
+     - Batch Size: 128
+     - Dropout Rate: 0.3
+     - Epochs: 15
+     - L2 Regularization: 0.000001
+     - Learning Rate: 0.0001
+
+  2. **Optimal Trade-off**:  `stellar-sweep-10`과 `deft-sweep-16`은 효율적인 실행 시간으로 약 81%의 성능을 제공했습니다.
+
+  3. **Validation Observations**: 검증 정확도는 대부분 80.81%에서 81.62% 사이로 안정적인 일반화 성능을 보였습니다.
+
+# MobileNetV4(모델 구조만 가져와 fine-tuning)
+
+## Summary of Results
+| Sweep Name         | Epochs | Best Epoch | Batch Size | Dropout Rate | L2 Regularization | Learning Rate | Test Accuracy | Train Accuracy | Validation Accuracy |
+|--------------------|--------|------------|------------|--------------|--------------------|---------------|---------------|----------------|----------------------|
+| young-sweep-13     | 20     | 15         | 16         | 0.1          | 0.000001           | 0.0001        | 0.7392        | 0.9051         | 0.7554               |
+| ethereal-sweep-3   | 10     | 9          | 16         | -            | 0.0001             | 0.0001        | 0.7388        | 0.8792         | 0.7542               |
+| electric-sweep-14  | 10     | 8          | 128        | 0.1          | 0.0001             | 0.004         | 0.7342        | 0.8783         | 0.7485               |
+| effortless-sweep-4 | 20     | 7          | 16         | -            | 0.00001            | 0.0001        | 0.7400        | 0.8785         | 0.7473               |
+| royal-sweep-8      | 10     | 9          | 128        | -            | 0.0001             | 0.004         | 0.7354        | 0.8855         | 0.7462               |
+| playful-sweep-2    | 10     | 10         | 16         | -            | 0.000001           | 0.0001        | 0.7342        | 0.8840         | 0.7446               |
+| clear-sweep-16     | 10     | 8          | 32         | -            | 0.0001             | 0.001         | 0.7319        | 0.8960         | 0.7442               |
+| celestial-sweep-9  | 20     | 9          | 32         | -            | 0.00001            | 0.0004        | 0.7215        | 0.9046         | 0.7423               |
+| efficient-sweep-19 | 10     | 10         | 32         | -            | 0.0001             | 0.0001        | 0.7227        | 0.8789         | 0.7404               |
+| warm-sweep-6       | 20     | 10         | 32         | 0.2          | 0.000001           | 0.0004        | 0.7288        | 0.9069         | 0.7392               |
+
+1. **Best Performance**: `young-sweep-13`은 **73.92%**의 테스트 정확도와 **75.54%**의 검증 정확도를 달성하며 가장 높은 성능을 기록하였습니다.
+  - **Batch Size**: 16  
+  - **Dropout Rate**: 0.1  
+  - **Epochs**: 20  
+  - **L2 Regularization**: 0.000001  
+  - **Learning Rate**: 0.0001
+
+2. **Optimal Trade-off**:  `electric-sweep-14`와 `playful-sweep-2`는 낮은 드롭아웃 비율과 더 적은 에포크 수를 사용하면서도 **73% 이상**의 테스트 정확도를 유지하였습니다.  
+  이는 성능과 실행 시간을 동시에 고려한 효율적인 구성으로 보입니다.
+3. **Validation Observations**:대부분의 검증 정확도는 **74.23%**에서 **75.54%** 사이로 안정적인 일반화 성능을 보여주었습니다.  
+  특히 `clear-sweep-16`과 `warm-sweep-6`은 검증 정확도에서 큰 차이가 없는 일관된 결과를 보였습니다.
+
+</details>
+
+
 ----
 
 ## 모델별 성능 비교
 ### 감정 분류
-| 모델 이름         | 정확도(%) | 정밀도(%) | 재현율(%) | F1 스코어(%) |
+| Model          | Test Accuracy(%) | Test F1 Score(%) | Test Precision(%) | Test Recall(%) | 
 |------------------|----------|----------|----------|-------------|
 | **DDAMFN++**       | 93.57     | 93.33     | 93.83     | 93.58        |
 | **PAtt-Lite**       | 89.13     | 89.40     | 89.29     | 89.34        |
 | **Deepface**       | 29.81     | 29.98     | 29.81     | 26.89        |
 
-### 인종 분류
-| 모델 이름         | 정확도(%) | 정밀도(%) | 재현율(%) | F1 스코어(%) |
-|------------------|----------|----------|----------|-------------|
-| **모델 A**       | 12.3     | 12.3     | 12.3     | 12.3        |
-| **모델 B**       | 12.3     | 12.3     | 12.3     | 12.3        |
+### 인종분류 
+
+| Model          | Test Accuracy(%) | Test F1 Score(%) | Test Precision(%) | Test Recall(%) | 
+|----------------|---------------|---------------|----------------|-------------|
+| **MobileNetV4**| 97.19    | 97.24    | 97.37     | 97.19  | 
+| **VGG16**      | 98.07    | 98.09    | 98.11     | 98.07  | 
 | **Deepface**       | 77.31     | 40.46     | 88.70     | 55.57        |
 
+**MobilenetV4**를 인종 분류 모델로 선택한 이유는 다음과 같습니다.
+- mobilnetV4가 VGG16에 비해 아키텍처가 더 작고, 메모리 요구 사항이 낮으며, 추론 시간이 더 빠릅니다.
+- 키오스크는 사용자에게 즉각적인 피드백을 제공하기 위해 실시간 처리가 필요한 경우가 많습니다.
+- MobileNetV4는 스윕에서 검증 손실이 더 낮았으며, 이는 다양한 사용자가 시스템과 상호 작용하는 키오스크에서 중요한, 보이지 않는 데이터에 대해 잘 일반화되었음을 나타냅니다.  
+
 ### 성별 분류
-| 모델 이름         | 정확도(%) | 정밀도(%) | 재현율(%) | F1 스코어(%) |
-|------------------|----------|----------|----------|-------------|
-| **모델 A**       | 12.3     | 12.3     | 12.3     | 12.3        |
+| Model          | Test Accuracy(%) | Test F1 Score(%) | Test Precision(%) | Test Recall(%) | 
+|----------------|---------------|---------------|----------------|-------------|
 | **Mini-Xception**       | 81.42     | 84.06     | 81.14     | 82.57        |
+| **ResNet18**       | 97.27     | 97.27     | 97.28     | 97.27        |
 | **Deepface**       | 71.81     | 88.95     | 54.82     | 67.84        |
 
+**ResNet18**을 성별 분류 모델로 선택한 이유는 다음과 같습니다
+
+- **탁월한 성능**  
+  ResNet18은 테스트 정확도와 F1 점수에서 최고의 성능을 기록하며, 신뢰할 수 있는 성별 분류 결과를 제공합니다.
+
+- **경량화 및 효율성**  
+  모델 크기가 작고 연산이 효율적으로 설계되어 키오스크 환경에서 실시간 처리가 가능하며, 빠른 사용자 응답을 지원합니다.
+
+- **일관된 결과**  
+  다양한 환경과 데이터셋에서도 높은 성능을 유지하여, 키오스크처럼 다양한 사용자가 이용하는 환경에 적합합니다.
+
+- **유연한 활용 가능성**  
+  ResNet18은 기존 데이터 학습 성능을 기반으로 추가 데이터 학습과 미세 조정을 통해 더욱 향상된 결과를 얻을 수 있습니다.
+
+- **실제 응용 적합성**  
+  키오스크와 같은 인터랙티브 시스템에서 중요한 요소인 신속한 응답성과 높은 정확도를 모두 충족합니다.
 
 ### 연령 분류
-| 모델 이름         | 정확도(%) | 정밀도(%) | 재현율(%) | F1 스코어(%) |
-|------------------|----------|----------|----------|-------------|
-| **모델 A**       | 12.3     | 12.3     | 12.3     | 12.3        |
-| **모델 B**       | 12.3     | 12.3     | 12.3     | 12.3        |
+| Model          | Test Accuracy(%) | Test F1 Score(%) | Test Precision(%) | Test Recall(%) | 
+|----------------|---------------|---------------|----------------|-------------|
+| **ResNet18**| 81.73    | 79.70    | 81.35     | 81.73  | 
+| **MobileNetV4**       | 74     | 66.80     | 67.88    | 74        |
 | **Deepface**       | 75.77     | 78.75     | 40.41     | 41.48        |
 
+**ResNet18**을 연령 분류 모델로 선택한 이유는 다음과 같습니다:
 
+- **최고의 성능**  
+  ResNet18은 **81.73%**의 테스트 정확도와 **79.70%**의 F1 점수를 기록하며 다른 모델 대비 가장 우수한 성능을 보였습니다.  
+  이는 모델이 높은 정확도와 균형 잡힌 정밀도(Precision) 및 재현율(Recall)을 제공한다는 점에서 신뢰성을 입증합니다.
+
+- **균형 잡힌 지표**  
+  ResNet18은 테스트 F1 점수(79.70%)에서 뛰어난 결과를 보여주었으며, 이는 정밀도(81.35%)와 재현율(81.73%) 사이의 균형을 나타냅니다.  
+  특히 MobileNetV4나 Deepface와 비교했을 때, Precision과 Recall의 차이가 적어 더욱 안정적입니다.
+
+- **MobileNetV4와의 비교**  
+  MobileNetV4는 경량화된 모델로 속도는 빠르지만, 테스트 정확도(74%)와 F1 점수(66.80%)가 ResNet18보다 낮았습니다.  
+  특히, ResNet18은 복잡한 데이터에서도 더 나은 일반화 성능을 제공했습니다.
+
+- **Deepface와의 비교**  
+  Deepface는 테스트 F1 점수(78.75%)는 양호했으나, 정밀도(40.41%)와 재현율(41.48%)에서 현저히 낮은 성능을 보였습니다.  
+  이는 모델이 높은 재현율을 요구하는 연령 분류 작업에 적합하지 않음을 의미합니다.
+
+- **확장 가능성**  
+  ResNet18은 사전 학습된 가중치를 활용해 미세 조정(Fine-Tuning)이 용이하며, 다양한 데이터셋에 대한 적응력이 뛰어나 향후 확장성과 유지보수 측면에서 유리합니다.
 
 ## 최종사용모델
 <details>
@@ -359,11 +555,168 @@ https://huggingface.co/kdtFinalProject 참조
 </details>
 
 
-### 2. 인종분류 [mobilenetV4](https://huggingface.co/blog/rwightman/mobilenetv4)  
-### 3. 성별분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
-### 4. 연령분류 [resnet18](https://huggingface.co/docs/transformers/model_doc/resnet)  
+<details>
+  <summary><h3>2.인종분류 MobilenetV4</h3></summary>
+  
+[MobileNetV4 논문](https://arxiv.org/abs/2404.10518) | [MobileNetV4 GitHub](https://github.com/tensorflow/models/blob/master/official/vision/modeling/backbones/mobilenet.py)
 
-### 5. 얼굴인식 [yolov11n-face](https://github.com/akanametov/yolo-face)  
+#### **구조 및 원리**
+**MobileNetV4**는 경량화된 효율적인 딥러닝 모델로, 인종 분류와 같은 작업을 위해 설계되었습니다.
+**Universal Inverted Bottleneck** (UIB)와 **Depthwise Separable Convolution**과 같은 혁신적인 기술을 결합하여 높은 정확도를 유지하면서도 계산 비용을 최소화하였으며, 모바일 디바이스나 키오스크와 같은 실시간 애플리케이션에 적합합니다.
+
+---
+
+#### **모델 구조**
+
+1. **입력 (얼굴 이미지)**  
+   - **입력 데이터:** 얼굴 이미지를 입력으로 처리하며, 얼굴 탐지 및 크기 조정을 통해 (224 × 224) 크기로 정규화합니다.  
+   - **목표:** 입력 얼굴의 특징을 기반으로 인종 카테고리를 예측합니다.
+
+2. **백본 네트워크 (MobileNetV4 Architecture)**  
+   - **역할:** 입력 이미지를 처리하여 고차원 특징을 추출합니다.  
+   - **구조:**  
+     - **Universal Inverted Bottleneck (UIB):**  
+       - Inverted Bottleneck, ConvNext, Feed Forward Network (FFN), ExtraDW와 같은 다양한 요소를 통합하여 특징 추출을 최적화합니다.  
+       - 이러한 구조는 모델의 성능과 적응성을 크게 향상시킵니다.
+     - **Mobile MQA (Mobile Multi-Head Attention):**  
+       - 모바일 가속기에 최적화된 특별한 주의 메커니즘으로, 기존 주의 메커니즘 대비 39%의 속도 향상을 제공합니다.  
+       - 이를 통해 모바일 하드웨어에서 추론 효율성을 극대화합니다.  
+     - **Optimized Neural Architecture Search (NAS):**  
+       - 최적화된 NAS 기법을 통해 다양한 모바일 플랫폼(CPU, DSP, GPU, Apple Neural Engine, Google Pixel EdgeTPU)에서 최적의 아키텍처를 생성합니다.
+     - **Depthwise Separable Convolution:**  
+       - 공간 및 채널 필터링을 분리하여 계산 효율성을 극대화합니다.  
+   - **백본 출력:** 압축된 특징 맵을 생성하여 Fully Connected Layers로 전달합니다.
+
+3. **Fully Connected Layers (FC Layers)**  
+   - **특징:** 백본에서 추출된 특징 맵이 Fully Connected Layers로 전달됩니다.  
+   - **출력:** FC Layers는 인종 카테고리의 클래스 확률을 예측합니다.
+
+4. **예측 헤드 (Softmax Output)**  
+   - **Softmax 분류:**  
+     - 인종 카테고리(예: Asian, Non-Asian)에 대한 확률 분포를 생성합니다.  
+     - 가장 높은 확률을 가진 카테고리를 최종 예측 값으로 지정합니다.
+
+5. **제안된 손실 함수**  
+   MobileNetV4는 **Cross Entropy Loss**를 사용하여 분류 오류를 최소화합니다:  
+   - **Cross Entropy Loss:** 예측된 클래스 확률과 실제 레이블 간의 차이를 줄입니다.  
+   - **Regularization (L2 Loss):** 네트워크의 큰 가중치를 규제하여 과적합을 방지합니다.  
+   - **총 손실:**  $$\text{Total Loss} = \text{Cross Entropy Loss} + \text{L2 Regularization Loss}$$
+
+---
+
+#### **동작 원리 요약**
+1. **입력 처리:** 입력된 얼굴 이미지를 네트워크에 맞게 크기 조정 및 정규화합니다.  
+2. **특징 추출:** MobileNetV4의 경량화된 아키텍처를 통해 고차원 특징을 추출합니다.  
+3. **예측 헤드:** Softmax를 사용하여 인종 카테고리를 분류합니다.  
+4. **손실 함수 최적화:** Cross Entropy Loss와 정규화를 결합하여 정확도를 높이고 과적합을 방지합니다.
+
+---
+
+#### **모델 특징**
+- **효율성:**  
+  - Depthwise Convolution과 UIB를 활용한 경량 설계로 모바일 플랫폼에 적합합니다.  
+  - Mobile MQA를 통해 기존 주의 메커니즘 대비 39% 빠른 추론 속도를 제공합니다.  
+- **정확도:** 높은 분류 성능을 유지하면서도 계산량을 최소화합니다.  
+- **실시간 애플리케이션:** 키오스크, 주의 모니터링, 인구 통계 연구와 같은 애플리케이션에 이상적입니다.  
+- **최적화된 아키텍처:** NAS를 통해 다양한 플랫폼에서 최적의 성능을 보장합니다.  
+
+
+
+</details>
+
+
+
+
+<details>
+  <summary><h3> 성별분류,연령분류 ResNet18</h3></summary>
+  
+ [ResNet18 docs](https://huggingface.co/docs/transformers/model_doc/resnet)    
+ [ResNet18 github](https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py)
+
+
+![image](https://github.com/user-attachments/assets/7f4bd0e9-0b78-401f-9d41-cf6978933edd)
+
+  ResNet18은 18개의 층으로 이루어진 ResNet을 의미하는데 244*244*3의 image를 input으로 받는다. 그리고 4개의 Conv block과 Adaptive Average Pooling을 시행한 후 Fully Connected layer(FC layer)를 통과시켜 이미지를 분류한다. 각각의 Conv block은 두 개의 3*3 Conv 레이어로 구성되어 있다.
+  
+- **연결 건너뛰기(잔여 연결)**:
+  ResNet18은 하나 이상의 레이어를 우회하는 잔여 연결을 도입하여 기울기가 이전 레이어로 직접 흐를 수 있도록 합니다. 이는 Vanishing Gradient 문제를 효과적으로 해결하고 더 깊은 네트워크의 훈련을 지원합니다.
+- **아키텍처 개요:**
+  1. **첫 번째 컨볼루션 레이어:**
+입력에서 신경망이 특징을 추출하도록 3×3크기의 필터로 입력 데이터를 합성곱  
+  2. **활성화 함수 (ReLU):**  
+비선형성을 추가하여 네트워크가 복잡한 패턴을 학습할 수 있도록 컨볼루션 결과에 ReLU 활성화 함수를 적용합니다.  
+  3. **두 번째 컨볼루션 레이어:**  
+3×3 크기의 필터로 특징을 추출, 첫 번째 레이어의 출력과 동일한 수의 필터를 사용하여 차원을 일치시킵니다.  
+  4. **잔차 연결 (Residual Connection):**  
+두 번째 컨볼루션 레이어의 출력에 첫 번째 레이어의 입력을 직접 더함. 이는 잔차를 학습하도록 하며, 기울기 소실 문제를 완화시켜 더 깊은 네트워크를 효과적으로 훈련시킴.  
+  5. **활성화 함수 (ReLU):**  
+잔차 연결 후에도 ReLU 활성화 함수를 적용하여 비선형성을 유지   
+</details>
+
+
+<details>  
+  <summary><h3> 얼굴 인식 - YOLOv11n-Face</h3></summary>  
+  [YOLOv11n-Face GitHub](https://github.com/akanametov/yolo-face)<br>  
+
+#### **구조 및 원리**  
+
+
+##### **개요**  
+YOLOv11n-Face는 **얼굴 탐지(Face Detection)** 및 **인식(Recognition)**을 위해 설계된 딥러닝 모델입니다. YOLO(You Only Look Once) 아키텍처를 기반으로 하며, 객체 탐지 기술의 발전을 활용하여 실시간 애플리케이션에 적합한 효율적이고 정확한 얼굴 탐지 솔루션을 제공합니다.
+
+---
+
+##### **모델 구조**  
+
+###### 1. **입력 (Images or Video Frames)**  - **입력 데이터:**  
+  - 모델은 이미지 또는 비디오 프레임을 입력으로 사용하며, 입력 데이터는 탐지에 최적화되도록 크기 조정 및 정규화 과정을 거칩니다.  
+- **목표:**  
+  - 입력 데이터에서 얼굴을 탐지하고 경계 상자(Bounding Box)의 좌표를 제공합니다.  
+
+###### 2. **백본 네트워크 (YOLOv11n Architecture)**  - **역할:**  
+  - YOLOv11n은 입력 이미지에서 특징을 추출합니다.  
+- **구조:**  
+  - **Convolutional Layers:** 입력 프레임에서 얼굴의 공간적 및 계층적 특징을 캡처합니다.  
+  - **Neck Module:** 다양한 크기의 얼굴 탐지 정확도를 향상시키기 위해 특징 맵을 처리합니다.  
+- **출력:**  
+  - 다양한 크기의 얼굴을 탐지하기 위한 최적화된 특징 맵을 생성합니다.  
+
+###### 3. **Detection Head**  - **Bounding Box Prediction:**  
+  - 탐지된 얼굴에 대한 경계 상자 중심 좌표, 너비 및 높이를 예측합니다.  
+- **Confidence Score:**  
+  - 얼굴 존재 가능성을 나타내는 신뢰 점수를 할당합니다.  
+
+###### 4. **후처리 (Post-Processing)**  - **Non-Maximum Suppression (NMS):**  
+  - 중복된 경계 상자를 제거하고 가장 정확한 탐지를 유지합니다.  
+- **최종 출력:**  
+  - 탐지된 얼굴에 대한 경계 상자와 신뢰 점수 목록을 제공합니다.  
+
+###### 5. **손실 함수 (Proposed Loss Function)**  
+YOLOv11n-Face는 탐지 성능을 최적화하기 위해 다음 손실 함수를 사용합니다:  
+- **Localization Loss:** 예측된 경계 상자 좌표와 실제 좌표 간의 차이를 줄입니다.  
+- **Confidence Loss:** 정확한 신뢰 점수를 할당할 수 있도록 모델을 최적화합니다.  
+- **총 손실:**  
+  \[  
+  \text{Total Loss} = \text{Localization Loss} + \text{Confidence Loss}  
+  \]  
+
+---
+
+##### **동작 원리 요약**  1. **입력 처리:** 입력된 이미지 또는 비디오 프레임을 모델에 맞게 크기 조정 및 정규화합니다.  
+2. **특징 추출:** YOLOv11n 백본을 통해 입력 데이터에서 고차원 특징을 추출합니다.  
+3. **Detection Head:** 얼굴 탐지를 위해 경계 상자와 신뢰 점수를 예측합니다.  
+4. **후처리:** Non-Maximum Suppression(NMS)을 사용하여 탐지 결과를 정제합니다.  
+5. **손실 최적화:** Localization Loss와 Confidence Loss를 결합하여 탐지 정확도를 높입니다.  
+
+---
+
+##### **모델 특징**  - **효율성:** YOLOv11n은 실시간 얼굴 탐지 애플리케이션에 최적화되어 있습니다.  
+- **정확성:** 까다로운 환경에서도 얼굴 탐지의 정밀도와 재현율을 균형 있게 유지합니다.  
+- **적용 가능성:** 감시, 인증, 증강 현실(AR)과 같은 다양한 얼굴 탐지 애플리케이션에 적합합니다.  
+
+</details>
+
+
 <details>
   <summary><h3>6. 시선추정 - L2CS-Net</h3></summary>
   [L2CS-Net Paper](https://arxiv.org/abs/2203.03339)<br>
@@ -441,10 +794,19 @@ https://github.com/kdt-kiosk/kiosk_gaze
 
 
 --- 
-# UI 설명 간단히
-recommend 중심으로 해야함
-언어선택도 포함
-senior UI에 대한 설
+# UI
+
+일반 UI
+![image](https://github.com/user-attachments/assets/3c695953-b2d3-4f2b-a2f5-5f30f6ad819f)
+
+
+Senior UI
+![image](https://github.com/user-attachments/assets/20beeb36-6db0-4735-af55-3354d00bb5cf)
+
+외국인으로 인식될시 메뉴화면대신 언어선택창이 먼저 출력
+![image](https://github.com/user-attachments/assets/b3e526a8-38bb-42e7-aef8-d3824decc0b6)
+
+
 
 # 시연 동영상
 
@@ -463,8 +825,18 @@ https://github.com/user-attachments/assets/f4172814-cdc7-4af5-85de-da0e1a692c96
 https://github.com/user-attachments/assets/54ce00b6-655c-4a77-b058-c0359bc9db30
 
 
-# 결론
-AI 모델을 이용해서 사용자 맞춤 서비스를 이용할수있다
-취약층 계층에게 시선으로만 주문이 가능하게 만들어 접근성을 높인다. <- 이런식으로 작성 Backgroud 참고
+# 결과
+1. **사용자 맞춤형 서비스 제공**  
+   - AI 모델을 통해 사용자 데이터를 기반으로 개인화된 추천 메뉴를 제공합니다.  
+   - 나이, 성별, 인종, 감정을 분석하여 각 사용자에게 최적화된 경험을 제공합니다.
 
+2. **접근성 개선**  
+   - 눈동자 추적 기술을 활용하여 손이 불편한 사용자나 취약 계층이 손쉽게 주문할 수 있는 환경을 제공합니다.  
+   - 사용자는 단순히 화면을 바라보는 것만으로 메뉴를 선택하고 주문할 수 있습니다.
+
+3. **실제 응용 사례**  
+   - 카페 키오스크에 적용하여, 일반 사용자뿐 아니라 노약자 및 장애인을 포함한 다양한 고객층이 서비스를 이용할 수 있도록 구현했습니다.  
+   - 개인화된 추천과 언어 선택 기능으로 전 세계 다양한 고객에게 적합한 솔루션 제공.  
+4. **사회적 기여**  
+   - 취약 계층의 디지털 격차 해소에 기여하며 포용적 기술을 선보임.
 
