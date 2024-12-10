@@ -2,6 +2,7 @@
 Title: 사용자 맞춤형 키오스크 
 Subtitle: 누구나 쉽게 주문할 수 있는 시스템
 팀원 : 박광준 , 이준성  
+팀원 : 박광준 , 이준성  
 ![image](https://github.com/user-attachments/assets/33a34af3-22a5-435e-b9eb-1d08d0dd4153)
 
 
@@ -95,6 +96,10 @@ Subtitle: 누구나 쉽게 주문할 수 있는 시스템
 
 
 ------------------
+# 파이프라인
+![맞춤형키오스크 개념도_develop drawio](https://github.com/user-attachments/assets/1a2283a8-66bc-4395-b0a8-65fd59fa30ab)
+
+
 # 파이프라인
 ![맞춤형키오스크 개념도_develop drawio](https://github.com/user-attachments/assets/1a2283a8-66bc-4395-b0a8-65fd59fa30ab)
 
